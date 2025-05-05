@@ -1,19 +1,24 @@
 const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
-const { SerialPort } = require('serialport');
 const http = require('http');
-const { ReadlineParser } = require('@serialport/parser-readline');
 const fs = require('fs');
-const scenarioDir = path.join(__dirname, 'public', 'scenarios');
-const rythmoDir = path.join(__dirname, 'public', 'rythmo');
-if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
+
 const out_port = 12346; //normalement 12345, le décallage permet d'interconnecté mon sniffer en 12345 et il appelle ici en 12346
 const serverStartTime = Date.now();
 let detectionAttempts = 0;
 const MAX_DETECTION_ATTEMPTS = 10;
 
+
+const scenarioDir = path.join(__dirname, 'public', 'scenarios');
+const rythmoDir = path.join(__dirname, 'public', 'rythmo');
+if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
+
+//////////////////////////////
 const intiface = new WebSocket(`ws://localhost:${out_port}`);
+const { port, parser,openPort } = require('./system/serialManager');
+const { getElapsedTime, logLocalIPs, registerShutdownHandler } = require('./system/common');
+
 let solaceIndex = null;
 let currentId = 1;
 const pendingCommands = new Map();
@@ -31,25 +36,72 @@ const max_cor_T = 20;
 
 let currentCommandId = null;
 
-function getElapsedTime() {
-  const now = Date.now();
-  const elapsedMs = now - serverStartTime;
-  const seconds = Math.floor(elapsedMs / 1000);
-  const milliseconds = elapsedMs % 1000;
-  return `${seconds}.${milliseconds.toString().padStart(3, '0')}`; // ex: "1.100"
-}
 
-//rechercher et indiquer la ou les adresses ip où tourne se programme
-const os = require('os');
-const interfaces = os.networkInterfaces();
-Object.keys(interfaces).forEach((ifname) => {
-  interfaces[ifname].forEach((iface) => {
-    if (iface.family === 'IPv4' && !iface.internal) {
-      console.log(`🌐 IP Locale (${ifname}): ${iface.address}`);
-    }
-  });
+logLocalIPs();
+registerShutdownHandler(intiface, port);
+
+const lovense = require('./system/lovenseController');
+lovense.setDependencies({
+  intiface,
+  solaceIndexRef: () => solaceIndex,
+  currentIdRef: () => currentId,
+  incrementId: () => currentId++,
+  pendingCommands,
+  stopPulse
+});
+//////////////////////////////
+openPort();
+
+port.on('open', () => {
+  console.log('🛰️ Serial port open!');
+});
+
+parser.on('data', (line) => {
+  console.log('📨 Serial response:', line.trim());
+});
+
+port.on('open', () => {
+  comSerialAvailable = true;
+  console.log('🛰️ Port série ouvert !');
   console.log();
 });
+
+port.on('error', (err) => {
+  comSerialAvailable = false;
+  console.error('⚡ Erreur série:', err.message);
+  console.log();
+});
+
+// Timer pour "coucou"
+setInterval(() => {
+  if (port && port.isOpen) {
+    if (Date.now() - lastCommandTime > 1500) {
+      console.log('🐣 Envoi automatique: coucou');
+      port.write('coucou\n');
+      lastCommandTime = Date.now();
+    }
+  } 
+}, 1000);
+
+
+parser.on('data', (message) => {
+  const cleaned = message.trim();
+  if (cleaned.length > 0) {
+    console.log('📨 Réponse série :', cleaned);
+    // Broadcast vers tous les clients WebSocket
+    wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(cleaned);
+      }
+    });
+  }
+});
+
+
+//////////////////////////////////
+
+
+
 
 
 //serveur web pour l'interface de pilotage
@@ -57,11 +109,6 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-/*
-// D'abord, route personnalisée pour la racine
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'echecindex.html'));
-});*/
 
 
 
@@ -134,58 +181,6 @@ server.listen(PORT_WEB, () => {
 
 });
 
-//communication port serie
-const PORT_SERIE = 'COM9';
-const BAUDRATE = 115200;
-let com9Available = false;
-
-const port = new SerialPort({
-  path: PORT_SERIE,
-  baudRate: BAUDRATE
-});
-
-port.on('open', () => {
-  com9Available = true;
-  console.log('🛰️ Port série ouvert !');
-  console.log();
-});
-
-port.on('error', (err) => {
-  com9Available = false;
-  console.error('⚡ Erreur série:', err.message);
-  console.log();
-});
-
-// Timer pour "coucou"
-setInterval(() => {
-  if (port && port.isOpen) {
-    if (Date.now() - lastCommandTime > 1500) {
-      console.log('🐣 Envoi automatique: coucou');
-      port.write('coucou\n');
-      lastCommandTime = Date.now();
-    }
-  } else {
-    // Tu peux logger une seule fois que le port est fermé si tu veux
-    // console.log("⛔ Port série fermé, pas de coucou.");
-  }
-}, 1000);
-
-// Parser les messages dans qui viennt du port série
-const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
-
-parser.on('data', (message) => {
-  const cleaned = message.trim();
-  if (cleaned.length > 0) {
-    console.log('📨 Réponse série :', cleaned);
-    // Broadcast vers tous les clients WebSocket
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(cleaned);
-      }
-    });
-  }
-});
-
 function handleJSONCommand(cmd) {
   if (!cmd || !cmd.type) {
     console.log('⚠️ Commande JSON invalide reçue.');
@@ -203,7 +198,7 @@ function handleJSONCommand(cmd) {
   switch (cmd.type) {
     case 'get_battery':
       console.log('🔋❓ Demande état batterie (toy)');
-      lovense_getBattery();
+      lovense.getBattery();
       break;
     case 'stop':
       console.log('🛑 Commande STOP reçue (toy)');
@@ -212,12 +207,12 @@ function handleJSONCommand(cmd) {
 
     case 'pump':
       console.log(`🎛️ Commande VIBRATE reçue: Intensité ${cmd.intensity}`);
-      lovense_pump(cmd.intensity);
+      lovense.pump(cmd.intensity);
       break;
 
     case 'move':
       console.log(`🎚️ Commande MOVE reçue: Position ${cmd.position}, Durée ${cmd.duration}ms`);
-      lovense_move(cmd.position, cmd.duration);
+      lovense.move(cmd.position, cmd.duration);
       break;
     case 'pumpRamp':
       console.log(`↗️ [pumpRamp] De ${cmd.start} à ${cmd.end} en ${cmd.duration}ms (ID ${cmd.id_commande})`);
@@ -226,7 +221,7 @@ function handleJSONCommand(cmd) {
     case "is_com9_available":
       frontendSocket.send(JSON.stringify({
         type: "com9_status",
-        available: com9Available
+        available: comSerialAvailable
       }));
       break;
 
@@ -278,7 +273,7 @@ intiface.on('open', () => {
 });
 
 intiface.on('message', (msg) => {
-  console.log(`     📨 Message reçu du client : ${msg.toString()} | ${getElapsedTime()}s`);
+  console.log(`     📨 Message reçu du client : ${msg.toString()} | ${getElapsedTime(serverStartTime)}s`);
   const parsed = JSON.parse(msg.toString());
 
   parsed.forEach(entry => {
@@ -301,7 +296,7 @@ intiface.on('message', (msg) => {
           solaceIndex = dev.DeviceIndex;
           console.log(`🎯 Device trouvé: ${dev.DeviceName} (index ${solaceIndex})`);
           console.log();
-          lovense_getBattery();
+          lovense.getBattery();
         }
       });
     }
@@ -391,7 +386,7 @@ function startCustomVibration() {
       }
     }];
 
-    console.log(`➡️ [${id}] Move vers ${position * 100}%, durée ${duration}ms, correction ${Math.round(correction)}ms, attente ${Math.round(attente)}ms | ${getElapsedTime()}s`);
+    console.log(`➡️ [${id}] Move vers ${position * 100}%, durée ${duration}ms, correction ${Math.round(correction)}ms, attente ${Math.round(attente)}ms | ${getElapsedTime(serverStartTime)}s`);
 
     pendingCommands.set(id, () => {
       if (isCustomVibrating && thisCommandId === currentCommandId) {
@@ -411,7 +406,7 @@ function startCustomVibration() {
 function stopCustomVibration() {
   isCustomVibrating = false;
   customVibeConfig = null;
-  lovense_stop(); // Envoie un vrai StopDeviceCmd
+  lovense.stop(); // Envoie un vrai StopDeviceCmd
 }
 
 /*à tester*/
@@ -436,6 +431,7 @@ function req_customLoop(min, max, speed, id) {
   updateCustomLoopParams(min, max, speed);
   startCustomVibration();
 }
+
 function lovense_rampInterpolated(start, end, duration, steps = 20) {
   if (solaceIndex === null) return;
 
@@ -464,215 +460,3 @@ function lovense_rampInterpolated(start, end, duration, steps = 20) {
     }, delay);
   }
 }
-
-
-
-
-/**
-primarys connands for lovence solace pro
-*/
-
-/**
- * Requests the current battery level from the connected Lovense toy.
- * Sends result to frontend if available.
- */
-function lovense_getBattery() {
-  if (!intiface || intiface.readyState !== WebSocket.OPEN) {
-    console.warn("❌ Intiface not connected, cannot request battery level.");
-    return;
-  }
-
-  const requestId = currentId++;
-  const batteryRequest = {
-    SensorReadCmd: {
-      Id: requestId,
-      DeviceIndex: solaceIndex,
-      SensorIndex: 0,
-      SensorType: "Battery"
-    }
-  };
-
-  // Temporary listener for the expected battery response
-  const handleBatteryResponse = (msg) => {
-    try {
-      const parsed = JSON.parse(msg);
-      for (const entry of parsed) {
-        if (
-          entry.SensorReading &&
-          entry.SensorReading.Id === requestId &&
-          entry.SensorReading.SensorType === "Battery"
-        ) {
-          const level = entry.SensorReading.Data[0];
-          console.log(`🔋 Battery level: ${level}%`);
-
-          // Forward to frontend
-          if (frontendSocket && frontendSocket.readyState === WebSocket.OPEN) {
-            frontendSocket.send(JSON.stringify({
-              type: "battery",
-              value: level
-            }));
-          }
-
-          intiface.off("message", handleBatteryResponse); // cleanup
-        }
-      }
-    } catch (err) {
-      console.warn("⚠️ Battery response parse error:", err);
-    }
-  };
-
-  intiface.on("message", handleBatteryResponse);
-  intiface.send(JSON.stringify([batteryRequest]));
-  console.log("📡 Battery request sent!");
-}
-
-
-/**
- * Sends a vibration command to the Lovense toy.
- * @param {number} intensity - Float between 0.05 and 0.80 (oscillation power)
- * @param {function} callback - Optional callback on completion
- * @param {boolean} forceStop - If true, stops ongoing pulse loop before execution
- */
-function lovense_pump(intensity, callback = () => {}, forceStop = false) {
-  if (solaceIndex === null) {
-    console.warn("[TOY]⚠️ No toy connected!");
-    return;
-  }
-
-  if (typeof intensity !== 'number' || isNaN(intensity)) {
-    console.error(`[TOY]❌ Invalid intensity type: ${intensity}`);
-    return;
-  }
-
-  if (intensity < 0.05 || intensity > 0.80) {
-    console.error(`[TOY]❌ Intensity out of range: ${intensity}`);
-    return;
-  }
-
-  const precision = (intensity.toString().split('.')[1] || '').length;
-  if (precision > 2) {
-    console.warn(`[TOY]⚠️ Intensity has too many decimal places: ${intensity}`);
-  }
-
-  if (forceStop) stopPulse();
-
-  const id = currentId++;
-  const cmd = [{
-    ScalarCmd: {
-      Id: id,
-      DeviceIndex: solaceIndex,
-      Scalars: [{ Index: 0, ActuatorType: "Oscillate", Scalar: intensity }]
-    }
-  }];
-
-  pendingCommands.set(id, () => {
-    console.log(`[TOY]✅ Vibration started at ${intensity}`);
-    callback();
-  });
-
-  intiface.send(JSON.stringify(cmd));
-}
-
-/**
- * Sends a movement command to the Lovense toy.
- * @param {number} position - Float between 0.0 and 1.0 (target position)
- * @param {number} duration - Integer in ms between 0 and 1500 (move duration)
- * @param {function} callback - Optional callback on completion
- * @param {boolean} forceStop - If true, stops ongoing pulse loop before execution
- */
-function lovense_move(position, duration, callback = () => {}, forceStop = false) {
-  if (solaceIndex === null) {
-    console.warn("[TOY]⚠️ No toy connected!");
-    return;
-  }
-
-  position = parseFloat(position);
-  duration = parseInt(duration);
-
-  if (isNaN(position) || position < 0.0 || position > 1.0) {
-    console.error(`[TOY]❌ Position out of range: ${position}`);
-    return;
-  }
-
-  const precision = (position.toString().split('.')[1] || '').length;
-  if (precision > 2) {
-    console.warn(`[TOY]⚠️ Position has too many decimal places: ${position}`);
-  }
-
-  if (isNaN(duration) || duration < 0 || duration > 1500) {
-    console.error(`[TOY]❌ Duration out of range: ${duration}`);
-    return;
-  }
-
-  if (forceStop) stopPulse();
-
-  const id = currentId++;
-
-  const cmd = [{
-    LinearCmd: {
-      Id: id,
-      DeviceIndex: solaceIndex,
-      Vectors: [{ Index: 0, Duration: duration, Position: position }]
-    }
-  }];
-
-  pendingCommands.set(id, () => {
-    console.log(`[TOY]✅ Move to ${position * 100}% for ${duration}ms`);
-    callback();
-  });
-
-  intiface.send(JSON.stringify(cmd));
-}
-
-/**
- * Sends a stop command to the Lovense toy.
- * Stops current vibrations or movements immediately.
- * @param {function} callback - Optional callback on confirmation
- */
-function lovense_stop(callback = () => {}) {
-  if (solaceIndex === null) {
-    console.warn("[TOY]⚠️ No toy connected!");
-    return;
-  }
-
-  stopPulse(); // Always stops the custom loop mode
-
-  const id = currentId++;
-  const cmd = [{
-    StopDeviceCmd: {
-      Id: id,
-      DeviceIndex: solaceIndex
-    }
-  }];
-
-  pendingCommands.set(id, () => {
-    console.log(`[TOY]🛑 Stop command confirmed`);
-    callback();
-  });
-
-  intiface.send(JSON.stringify(cmd));
-}
-
-
-
-// Quand on quitte (CTRL+C, kill, etc.)
-process.on('SIGINT', () => {
-  console.log('🛑 Arrêt demandé (SIGINT)');
-
-  if (intiface && intiface.readyState === WebSocket.OPEN) {
-    console.log('🔌 Déconnexion de Intiface...');
-    intiface.close();
-  }
-
-  if (port && port.isOpen) {
-    console.log('🔌 Envoi du STOP final au vibreur...');
-    port.write('e,id=999,target=vibror,mode=stop\n', () => {
-      port.close(() => {
-        console.log('✅ Port série fermé');
-        process.exit(0);
-      });
-    });
-  } else {
-    process.exit(0);
-  }
-});
