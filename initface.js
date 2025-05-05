@@ -436,88 +436,6 @@ function req_customLoop(min, max, speed, id) {
   updateCustomLoopParams(min, max, speed);
   startCustomVibration();
 }
-
-
-
-
-/*====================*/
-
-function lovense_getBattery() {
-  if (!intiface || intiface.readyState !== WebSocket.OPEN) {
-    console.warn("❌ Intiface non connecté, impossible de lire la batterie");
-    return;
-  }
-
-  const requestId = currentId++;
-  const batteryRequest = {
-    SensorReadCmd: {
-      Id: requestId,
-      DeviceIndex: solaceIndex,
-      SensorIndex: 0,
-      SensorType: "Battery"
-    }
-  };
-
-  // Écoute unique pour la réponse
-  const handleBatteryResponse = (msg) => {
-    try {
-      const parsed = JSON.parse(msg);
-      for (const entry of parsed) {
-        if (
-          entry.SensorReading &&
-          entry.SensorReading.Id === requestId &&
-          entry.SensorReading.SensorType === "Battery"
-        ) {
-          const level = entry.SensorReading.Data[0];
-          console.log(`🔋 Niveau de batterie : ${level}%`);
-
-          // Si tu veux l'envoyer à ta page Web :
-          if (frontendSocket && frontendSocket.readyState === WebSocket.OPEN) {
-            frontendSocket.send(JSON.stringify({
-              type: "battery",
-              value: level
-            }));
-          }
-
-          // On arrête d'écouter après réception
-          intiface.off("message", handleBatteryResponse);
-        }
-      }
-    } catch (err) {
-      console.warn("⚠️ Erreur de parsing réponse batterie :", err);
-    }
-  };
-
-  intiface.on("message", handleBatteryResponse);
-
-  // Envoi de la commande
-  intiface.send(JSON.stringify([batteryRequest]));
-  console.log("📡 Requête batterie envoyée !");
-}
-
-function lovense_pump(intensity, callback = () => { }) {
-  if (solaceIndex === null) {
-    console.warn("[TOY]⚠️ Aucun toy connecté !");
-    return;
-  }
-  if (solaceIndex === null) return;
-  stopPulse(); // <- ajouté ici pour couper le mode pulsé aussi
-
-  const id = currentId++;
-  const cmd = [{
-    ScalarCmd: {
-      Id: id,
-      DeviceIndex: solaceIndex,
-      Scalars: [{ Index: 0, ActuatorType: "Oscillate", Scalar: intensity }]
-    }
-  }];
-  pendingCommands.set(id, () => {
-    console.log(`[TOY]✅ Vibration ${intensity} lancée`);
-    callback();
-  });
-  intiface.send(JSON.stringify(cmd));
-}
-
 function lovense_rampInterpolated(start, end, duration, steps = 20) {
   if (solaceIndex === null) return;
 
@@ -547,15 +465,146 @@ function lovense_rampInterpolated(start, end, duration, steps = 20) {
   }
 }
 
-function lovense_move(position, duration, callback = () => { }) {
-  if (solaceIndex === null) {
-    console.warn("[TOY]⚠️ Aucun toy connecté !");
+
+
+
+/**
+primarys connands for lovence solace pro
+*/
+
+/**
+ * Requests the current battery level from the connected Lovense toy.
+ * Sends result to frontend if available.
+ */
+function lovense_getBattery() {
+  if (!intiface || intiface.readyState !== WebSocket.OPEN) {
+    console.warn("❌ Intiface not connected, cannot request battery level.");
     return;
   }
-  stopPulse(); // <- ajouté ici pour couper le mode pulsé aussi
+
+  const requestId = currentId++;
+  const batteryRequest = {
+    SensorReadCmd: {
+      Id: requestId,
+      DeviceIndex: solaceIndex,
+      SensorIndex: 0,
+      SensorType: "Battery"
+    }
+  };
+
+  // Temporary listener for the expected battery response
+  const handleBatteryResponse = (msg) => {
+    try {
+      const parsed = JSON.parse(msg);
+      for (const entry of parsed) {
+        if (
+          entry.SensorReading &&
+          entry.SensorReading.Id === requestId &&
+          entry.SensorReading.SensorType === "Battery"
+        ) {
+          const level = entry.SensorReading.Data[0];
+          console.log(`🔋 Battery level: ${level}%`);
+
+          // Forward to frontend
+          if (frontendSocket && frontendSocket.readyState === WebSocket.OPEN) {
+            frontendSocket.send(JSON.stringify({
+              type: "battery",
+              value: level
+            }));
+          }
+
+          intiface.off("message", handleBatteryResponse); // cleanup
+        }
+      }
+    } catch (err) {
+      console.warn("⚠️ Battery response parse error:", err);
+    }
+  };
+
+  intiface.on("message", handleBatteryResponse);
+  intiface.send(JSON.stringify([batteryRequest]));
+  console.log("📡 Battery request sent!");
+}
+
+
+/**
+ * Sends a vibration command to the Lovense toy.
+ * @param {number} intensity - Float between 0.05 and 0.80 (oscillation power)
+ * @param {function} callback - Optional callback on completion
+ * @param {boolean} forceStop - If true, stops ongoing pulse loop before execution
+ */
+function lovense_pump(intensity, callback = () => {}, forceStop = false) {
+  if (solaceIndex === null) {
+    console.warn("[TOY]⚠️ No toy connected!");
+    return;
+  }
+
+  if (typeof intensity !== 'number' || isNaN(intensity)) {
+    console.error(`[TOY]❌ Invalid intensity type: ${intensity}`);
+    return;
+  }
+
+  if (intensity < 0.05 || intensity > 0.80) {
+    console.error(`[TOY]❌ Intensity out of range: ${intensity}`);
+    return;
+  }
+
+  const precision = (intensity.toString().split('.')[1] || '').length;
+  if (precision > 2) {
+    console.warn(`[TOY]⚠️ Intensity has too many decimal places: ${intensity}`);
+  }
+
+  if (forceStop) stopPulse();
+
+  const id = currentId++;
+  const cmd = [{
+    ScalarCmd: {
+      Id: id,
+      DeviceIndex: solaceIndex,
+      Scalars: [{ Index: 0, ActuatorType: "Oscillate", Scalar: intensity }]
+    }
+  }];
+
+  pendingCommands.set(id, () => {
+    console.log(`[TOY]✅ Vibration started at ${intensity}`);
+    callback();
+  });
+
+  intiface.send(JSON.stringify(cmd));
+}
+
+/**
+ * Sends a movement command to the Lovense toy.
+ * @param {number} position - Float between 0.0 and 1.0 (target position)
+ * @param {number} duration - Integer in ms between 0 and 1500 (move duration)
+ * @param {function} callback - Optional callback on completion
+ * @param {boolean} forceStop - If true, stops ongoing pulse loop before execution
+ */
+function lovense_move(position, duration, callback = () => {}, forceStop = false) {
+  if (solaceIndex === null) {
+    console.warn("[TOY]⚠️ No toy connected!");
+    return;
+  }
 
   position = parseFloat(position);
   duration = parseInt(duration);
+
+  if (isNaN(position) || position < 0.0 || position > 1.0) {
+    console.error(`[TOY]❌ Position out of range: ${position}`);
+    return;
+  }
+
+  const precision = (position.toString().split('.')[1] || '').length;
+  if (precision > 2) {
+    console.warn(`[TOY]⚠️ Position has too many decimal places: ${position}`);
+  }
+
+  if (isNaN(duration) || duration < 0 || duration > 1500) {
+    console.error(`[TOY]❌ Duration out of range: ${duration}`);
+    return;
+  }
+
+  if (forceStop) stopPulse();
 
   const id = currentId++;
 
@@ -566,16 +615,27 @@ function lovense_move(position, duration, callback = () => { }) {
       Vectors: [{ Index: 0, Duration: duration, Position: position }]
     }
   }];
+
   pendingCommands.set(id, () => {
-    console.log(`[TOY]✅ Mouvement vers ${position * 100}% durée: ${duration} lancé`);
+    console.log(`[TOY]✅ Move to ${position * 100}% for ${duration}ms`);
     callback();
   });
+
   intiface.send(JSON.stringify(cmd));
 }
 
-function lovense_stop(callback = () => { }) {
-  if (solaceIndex === null) return;
-  stopPulse(); // <- ajouté ici pour couper le mode pulsé aussi
+/**
+ * Sends a stop command to the Lovense toy.
+ * Stops current vibrations or movements immediately.
+ * @param {function} callback - Optional callback on confirmation
+ */
+function lovense_stop(callback = () => {}) {
+  if (solaceIndex === null) {
+    console.warn("[TOY]⚠️ No toy connected!");
+    return;
+  }
+
+  stopPulse(); // Always stops the custom loop mode
 
   const id = currentId++;
   const cmd = [{
@@ -584,12 +644,16 @@ function lovense_stop(callback = () => { }) {
       DeviceIndex: solaceIndex
     }
   }];
+
   pendingCommands.set(id, () => {
-    console.log(`[TOY]🛑 Stop demandé`);
+    console.log(`[TOY]🛑 Stop command confirmed`);
     callback();
   });
+
   intiface.send(JSON.stringify(cmd));
 }
+
+
 
 // Quand on quitte (CTRL+C, kill, etc.)
 process.on('SIGINT', () => {
