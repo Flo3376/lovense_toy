@@ -1,0 +1,29 @@
+{
+    "loop": true,
+    "id": 2,
+    "category" : "soft",
+    "name": "Préchauffe 2",
+    "button" :"🫧Préchauffe",
+    "steps": [
+      { "comment": "Tapotement aléatoire doux avec vrai écart" },
+      { "action": "reqLov_pump", "value": { "random": [0.1, 0.17] } },
+      { "delay": { "random": [800, 1400] } },
+  
+      { "action": "reqLov_pump", "value": { "random": [0.24, 0.3] } },
+      { "delay": { "random": [800, 1400] } },
+  
+      { "comment": "Petite pause de relâche" },
+      { "action": "pause", "duration": { "random": [1000, 1800] } },
+  
+      { "comment": "Recul rapide pour simuler retrait" },
+      { "action": "reqLov_move", "position": 0.6, "duration": 400 },
+      { "delay": 400 },
+  
+      { "comment": "Retour lent et appui doux" },
+      { "action": "reqLov_move", "position": 0.1, "duration": 1000 },
+      { "delay": 600 },
+      { "action": "reqLov_pump", "value": 0.2 },
+      { "delay": 1500 }
+    ]
+  }
+  

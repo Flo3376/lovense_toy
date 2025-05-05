@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Tablette du plaisir</title>
+	<link rel="manifest" href="manifest.json">
+	<meta name="theme-color" content="#ff6f61">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="init.css">
+</head>
+
+<body>
+	<div class="main-wrapper">
+		<div id="magicClouds"></div>
+		<div class="header">
+			<div id="log" class="bg-dark text-white p-2"
+				style="height: 100px; overflow-y: auto; white-space: pre-line;">
+			</div>
+			<button onclick="stopAll()" style="background-color: #ff507a;">⛔Stop</button>
+			<button onclick="runRandomSequence()" class="random-button">🎲 Séquence Aléatoire</button>
+			<span id="batteryIndicator" style="margin-left: 1em; color: lime;">🔋100%</span>
+		</div>
+		<div class="top-fixed">
+			<!-- Ligne de déplacemnt de la tête en manuel -->
+			<div class="entry move-delay-wrapper">
+				<div class="slider-line">
+					<span class="slider-text">Move Delay</span>
+					<input type="range" id="MoveSpeed" class="form-range" min="10" max="1000" value="500" step="10">
+					<span id="labelMoveSpeed" class="slider-text">500ms</span>
+				</div>
+
+				<div class="move-buttons">
+					<button onclick="reqLov_move(1,sliderMoveDelayValue)">0%</button>
+					<button onclick="reqLov_move(0.75,sliderMoveDelayValue)">25%</button>
+					<button onclick="reqLov_move(0.5,sliderMoveDelayValue)">50%</button>
+					<button onclick="reqLov_move(0.25,sliderMoveDelayValue)">75%</button>
+					<button onclick="reqLov_move(0,sliderMoveDelayValue)">100%</button>
+				</div>
+			</div>
+			<!-- Ligne de vibration com9 -->
+			<div class="entry vibrate-wrapper vibror-block">
+				<input type="range" id="vibrorSlider" min="0" max="225" value="0" step="5" style="width:300px;">
+				<span id="vibrorValue">0</span> / 255
+				<br><br>
+
+				<button onclick="req_vibeCom_simple(0)">0%</button>
+				<button onclick="req_vibeCom_simple(85)">33%</button>
+				<button onclick="req_vibeCom_simple(170)">66%</button>
+				<button onclick="req_vibeCom_simple(225)">88%</button>
+				<button onclick="req_vibeCom_stop()">STOP</button>
+
+				<br><br>
+				<h3>🌈 Rampes Vibror</h3>
+				<button onclick="req_vibeCom_ramp(0, 150, 2000)">Douce (0 → 150 en 2s)</button>
+				<button onclick="req_vibeCom_ramp(100, 255, 1000)">Forte (100 → 255 en 1s)</button>
+				<button onclick="req_vibeCom_ramp(0, 255, 5000)">Lente (0 → 255 en 5s)</button>
+				<button onclick="req_vibeCom_stop()">STOP</button>
+			</div>
+			<!-- Ligne de pompage -->
+			<div class="entry pump-wrapper">
+				<div class="vibe-buttons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+					<div style="margin: auto; text-align: center; ">
+						<!-- Range horizontal -->
+						<div class="slider-line">
+							<span class="slider-text">🎚 Intensité</span>
+							<input type="range" id="pumpRange" min="0.1" max="0.80" step="0.01" value="0.50"
+								oninput="updatePumpFromSlider(parseFloat(this.value))">
+							<span id="pumpValue" class="slider-text">0.50</span>
+						</div>
+
+						<!-- Boutons -->
+						<div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+							<button onclick="reqLov_pumpSmooth(0.10)">pump 10</button>
+							<button onclick="reqLov_pumpSmooth(0.20)">pump 20</button>
+							<button onclick="reqLov_pumpSmooth(0.30)">pump 30</button>
+							<button onclick="reqLov_pumpSmooth(0.40)">pump 40</button>
+							<button onclick="reqLov_pumpSmooth(0.50)">pump 50</button>
+							<button onclick="reqLov_pumpSmooth(0.60)">pump 60</button>
+							<button onclick="reqLov_pumpSmooth(0.70)">pump 70</button>
+							<button onclick="reqLov_pumpSmooth(0.80)">pump 80</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="scroll-wrapper">
+			<div class="main-content">
+				<div class="scroll-zone">
+					<div class="content-box">
+						<div id="loopPad" style="position: relative;  background: #111; margin: 2em auto;">
+						</div>
+						<script>
+
+							const loopPresets = [
+								{ "min": 0, "max": 25, "duration_min": 50, "duration_max": 250 },
+								{ "min": 0, "max": 33, "duration_min": 50, "duration_max": 300 },
+								{ "min": 0, "max": 50, "duration_min": 50, "duration_max": 600 },
+								{ "min": 25, "max": 50, "duration_min": 50, "duration_max": 250 },
+								{ "min": 25, "max": 75, "duration_min": 50, "duration_max": 700 },
+								{ "min": 33, "max": 66, "duration_min": 50, "duration_max": 300 },
+								{ "min": 50, "max": 100, "duration_min": 50, "duration_max": 700 },
+								{ "min": 66, "max": 100, "duration_min": 50, "duration_max": 300 },
+								{ "min": 75, "max": 100, "duration_min": 50, "duration_max": 250 },
+								{ "min": 0, "max": 100, "duration_min": 100, "duration_max": 1000 },
+							];
+
+							const loopPad = document.getElementById("loopPad");
+							loopPad.innerHTML = ""; // Clear existing if needed
+
+							function clearMarkers() {
+								document.querySelectorAll('.loop-marker').forEach(el => el.remove());
+							}
+
+							loopPresets.forEach((preset, index) => {
+								const row = document.createElement("div");
+								row.className = "loop-row";
+
+								const bar = document.createElement("div");
+								bar.className = "loop-bar";
+
+								bar.title = `Course ${preset.min}–${preset.max}%, Durée ${preset.duration_min}–${preset.duration_max}ms`;
+
+								bar.style.marginLeft = `${preset.min}%`;
+								bar.style.width = `${preset.max - preset.min}%`;
+
+								bar.addEventListener("click", (e) => {
+									const barWidth = bar.offsetWidth;
+									const clickX = e.offsetX;
+									const ratio = clickX / barWidth;
+
+									let duration = preset.duration_max - ratio * (preset.duration_max - preset.duration_min);
+									duration = Math.round(duration);
+
+									clearMarkers();
+
+									const marker = document.createElement("div");
+									marker.className = "loop-marker";
+									marker.style.left = `${ratio * 100}%`; // Position relative to bar
+									bar.appendChild(marker);
+
+									console.log(`🎯 Loop: min=${preset.min}, max=${preset.max}, duration=${duration}ms`);
+
+									//reqLov_loop(preset.min, preset.max, duration);
+									reqLov_loop(100 - preset.max, 100 - preset.min, duration);
+								});
+
+								row.appendChild(bar);
+								loopPad.appendChild(row);
+							});
+						</script>
+					</div>
+					<div class="content-box">
+						<scenario></scenario>
+						<script>
+							document.addEventListener("DOMContentLoaded", () => {
+								const colSoft = document.querySelector(".entry-col.start");
+								const colMedium = document.querySelector(".entry-col.middle");
+								const colHard = document.querySelector(".entry-col.finish");
+								if (!mesScenarios || !Array.isArray(mesScenarios)) return;
+
+								mesScenarios.forEach(s => {
+									console.log("intégration de " + s.name)
+									const btn = document.createElement("button");
+									btn.textContent = s.button;
+									btn.setAttribute("data-scenario", s.file);
+									btn.onclick = () => loadScenario(btn);
+
+									switch (s.category) {
+										case "soft":
+											colSoft.appendChild(btn);
+											break;
+										case "hard":
+											colHard.appendChild(btn);
+											break;
+										case "medium":
+										default:
+											colMedium.appendChild(btn);
+											break;
+									}
+								});
+							});
+						</script>
+						<div class="entry-columns">
+							<!-- 🧊 DÉMARRAGE -->
+							<div class="entry-col start">
+								<!--<button data-scenario="wake_up.json" onclick="loadScenario(this)">⏯️ Réveil
+									Doux</button>
+								<button data-scenario="intense_loop.json" onclick="loadScenario(this)">🔥 Intense
+									Loop</button>
+								<button data-scenario="massage_exploratoire.json" onclick="loadScenario(this)">🖐️
+									Massage Exploratoire</button>
+								<button data-scenario="tempete.json" onclick="loadScenario(this)">🌪️ Tempête</button>
+								<button data-scenario="interrogation_lente.json" onclick="loadScenario(this)">⏳
+									Interrogation Lente</button>
+								<button data-scenario="main_fantome.json" onclick="loadScenario(this)">👻 Main
+									Fantôme</button>
+								-->
+							</div>
+
+							<!-- ⚙️ TRAVAIL -->
+							<div class="entry-col middle">
+								<button data-scenario="edge_tease_loop.json" onclick="loadScenario(this)">🌊 Edge Tease
+									Loop</button>
+								<button data-scenario="maintien_temperature.json" onclick="loadScenario(this)">🌡️
+									Maintien Température</button>
+								<button data-scenario="caresse_sensuelle.json" onclick="loadScenario(this)">💤 Caresse
+									Sensuelle</button>
+								<button data-scenario="prechauffage_caresse.json" onclick="loadScenario(this)">🫧
+									Préchauffage Caresse</button>
+
+
+
+							</div>
+
+							<!-- 🔥 FINISH -->
+							<div class="entry-col finish">
+
+								<button data-scenario="prechauffe.json" onclick="loadScenario(this)">prechauffe</button>
+								<button data-scenario="bouquet_final.json" onclick="loadScenario(this)">🎇 Bouquet
+									Final</button>
+								<button data-scenario="retrait_long.json" onclick="loadScenario(this)">🌀 Retrait
+									Long</button>
+
+
+							</div>
+						</div>
+					</div>
+					<div class="content-box">
+						<div id="controlPad" onclick="handleTap(event)" style="height: 300px; display: none;"
+							onmousedown="startPadControl(event)" onmousemove="updatePadControl(event)"
+							onmouseup="stopPadControl()">
+							<div id="padIndicator"></div>
+						</div>
+					</div>
+					<div class="content-box"></div>
+				</div>
+			</div>
+			<div class="right-fixed slider-wrapper">
+				<div class="slider-group">
+					<div>
+						<label>Max<br>
+							<input type="range" id="offsetMin " class="form-range" min="0" max="100" value="25"><br>
+							<span id="labelMin">25%</span>
+						</label>
+					</div>
+					<div>
+						<label>Min<br><!--/offsetMax-->
+							<input type="range" id="offsetMax " class="form-range" min="0" max="100" value="75"><br>
+							<span id="labelMax">75%</span>
+						</label>
+					</div>
+					<div>
+						<label>Speed<br>
+							<input type="range" id="speed" class="form-range" min="10" max="1000" value="500"
+								step="10"><br>
+							<span id="labelSpeed">100ms</span>
+						</label>
+					</div>
+				</div>
+				<button onclick="launchLoopLov()"
+					style="width: 100%;background-color: #4caf50; color: white; border: none; font-weight: bold; border-radius: 4px;">✅Start</button>
+				<button id="pauseScenarioBtn" onclick="togglePauseScenario()">⏸ Pause</button>
+				<button onclick="stopAll()" style="width: 100%;background-color: #ff507a;">⛔Stop</button>
+			</div>
+		</div>
+	</div>
+	</div>
+</body>
+<script>
+	const ws = new WebSocket(`ws://${location.host}`); // Connexion WebSocket
+
+	let sliderMoveDelayValue = 500; // valeur de départ 1000ms
+
+	/*nouvelle base de fonctionnement*/
+	let id_commande = 1;
+	let currentCommandId = null;
+	let vibrorId = 1;
+	let isLoopActive = false;
+	let debounceLoopTimer;
+	let reactivity_slider = 150;
+	let lastPumpIntensity = 0.5; // Valeur par défaut
+	let currentId = 0;
+
+	ws.onopen = () => {
+		console.log('✅ WebSocket connecté');
+		resetId(); // ⬅️ C'est ici qu'on appelle resetId au chargement
+		ws.send(JSON.stringify({ type: "is_com9_available" }));
+
+		/*if (!com9Available) {
+			hideCom9Blocks();
+		}*/
+
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify({ type: "get_battery" }));
+			console.log("📡 Demande batterie envoyée depuis frontend");
+		}
+
+		setInterval(() => {
+			if (ws && ws.readyState === WebSocket.OPEN) {
+				ws.send(JSON.stringify({ type: "get_battery" }));
+				console.log("📡 Demande batterie envoyée depuis frontend");
+			}
+		}, 60000); // toutes les 60 secondes
+	};
+
+	const logs = [];
+
+	function log(msg) {
+		logs.push(msg);
+		if (logs.length > 5) logs.shift();
+		const box = document.getElementById('log');
+		box.innerText = logs.join('\n');
+		box.scrollTop = box.scrollHeight;
+	}
+
+	ws.onmessage = (event) => {
+		const data = event.data;
+
+		try {
+			const parsed = JSON.parse(data);
+
+			//console.log(parsed);
+
+			if (parsed.type === 'control_lost') {
+				stopAll(); // coupe tout
+				log(`🛑 Contrôle repris par ${parsed.by}`);
+				return;
+			}
+			if (parsed.type === "com9_status") {
+				get_serial_state(parsed.available);
+			}
+			if (parsed.type === "battery") {
+				updateBatteryIndicator(parsed.value)
+			}
+		} catch {
+			// Message normal texte
+			log(`⬅️ ${data}`);
+		}
+	};
+
+	let sliderMoveSpeed = 500; // valeur de départ = 500ms
+	document.getElementById('MoveSpeed').addEventListener('input', (e) => {
+		sliderMoveSpeed = parseInt(e.target.value);
+		document.getElementById('labelMoveSpeed').innerText = `${sliderMoveSpeed} ms`;
+	});
+
+	let pumpIntensityValue = 0.5; // valeur initiale : 0.50
+	document.getElementById('pumpRange').addEventListener('input', (e) => {
+		pumpIntensityValue = parseFloat(e.target.value);
+		document.getElementById('pumpValue').textContent = pumpIntensityValue.toFixed(2);
+	});
+
+	let offsetMin = 25;
+	let offsetMax = 75;
+	let loopMin = 75;
+	let loopMax = 25;
+	const MIN_GAP = 30; // écart minimal entre les sliders
+	const SPEED_PER_PERCENT = 10; // 10ms par % de course mini
+
+	function adjustSpeedIfTooSlow() {
+		/*let course = Math.abs(loopMin - loopMax);
+		console.log("course :" +course);
+		let speedMax = course * SPEED_PER_PERCENT;
+
+		if (loopSpeed > speedMax) {
+			loopSpeed = speedMax;
+			document.getElementById('speed').value = loopSpeed;
+			document.getElementById('labelSpeed').innerText = `${loopSpeed}ms`;
+		}*/
+	}
+
+	document.getElementById('offsetMin ').addEventListener('input', (e) => {
+		offsetMin = parseInt(e.target.value);
+
+		// Empêche offsetMin de monter au-delà de la limite mécanique
+		if (offsetMin + MIN_GAP > 100) {
+			offsetMin = 100 - MIN_GAP;
+			document.getElementById('offsetMin ').value = offsetMin;
+		}
+
+		// Si offsetMin devient trop proche d'offsetMax, pousse offsetMax vers le bas
+		if (offsetMin + MIN_GAP > offsetMax) {
+			//console.log("trop proche1");
+			offsetMax = Math.max(0, offsetMin + MIN_GAP);
+			document.getElementById('offsetMax ').value = offsetMax;
+			document.getElementById('labelMax').innerText = `${offsetMax}%`;
+		}
+
+		document.getElementById('labelMin').innerText = `${offsetMin}%`;
+		loopMin = 0 + offsetMin;
+		loopMax = 0 + offsetMax;
+
+		adjustSpeedIfTooSlow();
+
+		clearTimeout(debounceLoopTimer);
+		debounceLoopTimer = setTimeout(() => {
+			if (isLoopActive) reqLov_loop(loopMin, loopMax, loopSpeed);
+			maybeStartLoop();
+		}, reactivity_slider);
+	});
+
+
+	document.getElementById('offsetMax ').addEventListener('input', (e) => {
+		offsetMax = parseInt(e.target.value);
+
+		// Empêche offsetMin de monter au-delà de la limite mécanique
+		if (offsetMax - MIN_GAP < 0) {
+			offsetMax = 0 + MIN_GAP;
+			document.getElementById('offsetMax ').value = offsetMax;
+		}
+
+		// Si offsetMax monte trop près de offsetMin, pousse offsetMin vers le haut
+		if (offsetMax < offsetMin + MIN_GAP) {
+			//console.log("trop proche2");
+			offsetMin = Math.min(100, offsetMax - MIN_GAP);
+			document.getElementById('offsetMin ').value = offsetMin;
+			document.getElementById('labelMin').innerText = `${offsetMin}%`;
+		}
+
+		document.getElementById('labelMax').innerText = `${offsetMax}%`;
+		loopMin = 0 + offsetMin;
+		loopMax = 0 + offsetMax;
+
+		adjustSpeedIfTooSlow();
+
+		clearTimeout(debounceLoopTimer);
+		debounceLoopTimer = setTimeout(() => {
+			if (isLoopActive) reqLov_loop(loopMin, loopMax, loopSpeed);
+			maybeStartLoop();
+		}, reactivity_slider);
+	});
+
+	let loopSpeed = 500;
+	document.getElementById('speed').addEventListener('input', (e) => {
+		loopSpeed = parseInt(e.target.value);
+		document.getElementById('labelSpeed').innerText = `${loopSpeed}ms`;
+
+		clearTimeout(debounceLoopTimer);
+		debounceLoopTimer = setTimeout(() => {
+			if (isLoopActive) {
+				reqLov_loop(loopMin, loopMax, loopSpeed);
+			}
+			maybeStartLoop();
+		}, reactivity_slider);
+	});
+
+	function updateLabel(id) {
+		let value;
+
+		if (id === 'min') {
+			value = `${sliderLoopMin}%`;
+			document.getElementById('labelMin').innerText = value;
+		} else if (id === 'max') {
+			value = `${sliderLoopMax}%`;
+			document.getElementById('labelMax').innerText = value;
+		} else if (id === 'speed') {
+			value = `${sliderLoopSpeed}ms`;
+			document.getElementById('labelSpeed').innerText = value;
+		}
+	}
+
+	/*commande pour com9*/
+	function req_vibeCom_simple(valeur) {
+		id_commande++;
+		currentCommandId = id_commande;
+		ctrl_softStopCom(); // Coupe toute vibration en cours
+		primCom_vibeSimple(valeur);
+	}
+
+	function req_vibeCom_ramp(start, end, duration) {
+		id_commande++;
+		currentCommandId = id_commande;
+		ctrl_softStopCom(); // Pareil, stop la précédente
+		primCom_vibeRamp(start, end, duration);
+	}
+
+	function req_vibeCom_stop() {
+		id_commande++;
+		currentCommandId = id_commande;
+		ctrl_softStopCom(); // Peut paraître redondant ici mais garde la logique propre
+		primCom_vibeStop();
+	}
+
+	function ctrl_softStopCom() {
+		primCom_vibeStop();
+		console.log('⛔ [ctrl_softStopCom] Vibreur série arrêté');
+	}
+
+	function primCom_vibeSimple(valeur) {
+		const commande = `e,id=${vibrorId++},target=vibror,mode=simple,value=${valeur}`;
+		ws.send(commande);
+	}
+
+	function primCom_vibeStop() {
+		const commande = `e,id=${vibrorId++},target=vibror,mode=stop`;
+		ws.send(commande);
+	}
+
+	function primCom_vibeRamp(start, end, duration) {
+		const commande = `e,id=${vibrorId++},target=vibror,mode=rampe,start=${start},end=${end},duration=${duration}`;
+		ws.send(commande);
+	}
+
+	function resetId() {
+		currentId = 0;
+		console.log('🔄 ID remis à 1, envoi reset_id au port série');
+		log('🔄 ID remis à 1, envoi reset_id au port série');
+		ws.send('reset_id');
+	}
+
+	function get_serial_state(available) {
+		const com9Blocks = document.querySelectorAll('.vibror-block');
+		com9Blocks.forEach(el => {
+			el.style.display = available ? "block" : "none";
+		});
+
+		console.log(`🔧 COM9 visible : ${available}`);
+		log(`🔧 COM9 visible : ${available}`);
+	}
+
+	/*commande pour lovense*/
+	function maybeStartLoop() {
+		if (!isLoopActive) {
+			reqLov_loop(loopMin, loopMax, loopSpeed);
+		}
+	}
+
+	function launchLoopLov() {
+		reqLov_loop(loopMin, loopMax, loopSpeed);
+	}
+
+	function reqLov_pumpSmooth(targetIntensity) {
+		const seuil = 0.2; // Seuil de "variation brutale" (ajuste selon tests)
+		const diff = Math.abs(targetIntensity - lastPumpIntensity);
+
+		id_commande++;
+		currentCommandId = id_commande;
+
+		//ctrl_hardStop();
+
+		setTimeout(() => {
+			if (diff > seuil) {
+				// Douce transition : 300ms par défaut
+				primLov_pumpRamp(lastPumpIntensity, targetIntensity, diff * 5000, currentCommandId);
+				console.log(`🌈 Ramp from ${lastPumpIntensity} to ${targetIntensity}`);
+				log(`🌈 Ramp from ${lastPumpIntensity} to ${targetIntensity}`);
+
+			} else {
+				primLov_pump(targetIntensity, currentCommandId);
+			}
+
+			// Mise à jour interface
+			document.getElementById('pumpRange').value = targetIntensity;
+			document.getElementById('pumpValue').textContent = targetIntensity.toFixed(2);
+			lastPumpIntensity = targetIntensity;
+		}, 150);
+	}
+
+	function primLov_pumpRamp(start, end, duration, id) {
+		ws.send(JSON.stringify({
+			type: 'pumpRamp',
+			start: start,
+			end: end,
+			duration: duration,
+			id_commande: id
+		}));
+		console.log(`↗️ [primLov_pumpRamp] ${start} → ${end} en ${duration}ms (ID ${id})`);
+		log(`↗️ [primLov_pumpRamp] ${start} → ${end} en ${duration}ms (ID ${id})`);
+	}
+
+	function reqLov_loop(min, max, speed) {
+		id_commande++;
+		currentCommandId = id_commande;
+
+		// Vérifie si les sliders sont désynchronisés
+		if (loopMin !== min || loopMax !== max || loopSpeed !== speed) {
+			// Mets à jour les sliders SANS déclencher leurs actions
+			offsetMin = min;
+			offsetMax = max;
+			loopMin = min;
+			loopMax = max;
+			loopSpeed = speed;
+
+			document.getElementById('offsetMin ').value = offsetMin;
+			document.getElementById('offsetMax ').value = offsetMax;
+			document.getElementById('speed').value = loopSpeed;
+
+			document.getElementById('labelMin').innerText = `${offsetMin}%`;
+			document.getElementById('labelMax').innerText = `${offsetMax}%`;
+			document.getElementById('labelSpeed').innerText = `${loopSpeed}ms`;
+		}
+
+		ctrl_loopLov(min, max, speed, currentCommandId);
+	}
+
+	function ctrl_loopLov(min, max, speed, id) {
+		isLoopActive = true;
+
+		ws.send(JSON.stringify({
+			type: 'customVibe',
+			min: min,
+			max: max,
+			speed: speed,
+			id_commande: id
+		}));
+		console.log(`🌀 [customLoop] min: ${min}%, max: ${max}%, duration: ${speed}ms (ID ${id})`);
+		log(`🌀 [customLoop] min: ${min}%, max: ${max}%, duration: ${speed}ms (ID ${id})`);
+	}
+
+	function stopAll() {
+		req_stopAll();
+		stopScenario();
+
+	}
+
+	function req_stopAll() {
+		id_commande++;
+		currentCommandId = id_commande;
+
+		ctrl_hardStop(); // Pour l’ensemble Lovense + COM9
+	}
+
+	function updatePumpFromSlider(val) {
+		reqLov_pump(val);
+	}
+
+	function reqLov_pump(intensity) {
+		id_commande++;
+		currentCommandId = id_commande;
+
+		//stopScenario();     // logique
+		ctrl_hardStop();    // physique
+
+		document.getElementById('pumpRange').value = intensity;
+		document.getElementById('pumpValue').textContent = intensity.toFixed(2);
+
+		setTimeout(() => {
+			primLov_pump(intensity, currentCommandId);
+		}, 150);
+	}
+
+	function primLov_pump(intensity, id) {
+		ws.send(JSON.stringify({
+			type: 'pump',
+			intensity,
+			id_commande: id
+		}));
+		console.log(`📡 [primLov_pump] Intensité ${Math.round(intensity * 100)}% (ID ${id})`);
+		log(`📡 [primLov_pump] Intensité ${Math.round(intensity * 100)}% (ID ${id})`);
+	}
+
+	function reqLov_move(position, duration) {
+		id_commande++; // Nouvelle commande = nouveau token
+		ctrl_hardStop(); // Coupe toute action précédente
+
+		setTimeout(() => {
+			primLov_move(position, duration, id_commande);
+		}, 100); // ou 200ms si nécessaire
+	}
+
+	function primLov_move(position, duration, id) {
+		ws.send(JSON.stringify({
+			type: 'move',
+			position: position,   // entre 0.0 et 1.0
+			duration: duration,   // en ms
+			id_commande: id
+		}));
+		console.log(`➡️ [prim_move] Vers ${position * 100}% en ${duration}ms (ID ${id})`);
+		log(`➡️ [prim_move] Vers ${position * 100}% en ${duration}ms (ID ${id})`);
+	}
+
+	function updateBatteryIndicator(level) {
+		const indicator = document.getElementById("batteryIndicator");
+		indicator.textContent = `🔋${level}%`;
+
+		if (level <= 20) {
+			indicator.style.color = "red";
+		} else if (level <= 50) {
+			indicator.style.color = "orange";
+		} else {
+			indicator.style.color = "lime";
+		}
+	}
+
+	function ctrl_hardStop() {
+		isLoopActive = false;
+		ws.send(JSON.stringify({ type: 'stop' }));
+		console.log('🛑 [ctrl_hardStop] Stop envoyé');
+		log('🛑 [ctrl_hardStop] Stop envoyé');
+	}
+
+	/*gestion des scénario*/
+	let scenarioLooping = false;
+	let scenarioInterrupted = false;
+	let scenarioPaused = false;
+	let currentScenarioState = { scenario: null, index: 0 };
+
+	function playScenario(scenario, index = 0) {
+		if (scenarioPaused) {
+			console.log("⏸ En pause, en attente de reprise");
+			currentScenarioState = { scenario, index }; // ← on garde l'état
+			return;
+		}
+		const steps = scenario.steps || scenario;
+
+
+		if (index >= steps.length) {
+			if (scenario.loop && !scenarioInterrupted) {
+				console.log("🔁 Redémarrage scénario en boucle");
+				return playScenario(scenario, 0);
+			} else {
+				console.log("✅ Fin du scénario");
+				log("📴 Scénario terminé");
+				hideMagicClouds();
+				return;
+			}
+		}
+		showMagicClouds();
+
+		// Sécurité anti-reprise
+		if (scenarioInterrupted) {
+			console.log("🛑 Scénario interrompu (avant step)");
+			hideMagicClouds();
+			return;
+		}
+
+		const step = steps[index];
+
+		// Ignore les commentaires
+		if (step.comment) {
+			console.log(`💬 ${step.comment}`);
+			log(`💬 ${step.comment}`);
+			return playScenario(scenario, index + 1);
+		}
+
+		const resolve = (val) =>
+			typeof val === "object" && val.random
+				? Math.random() * (val.random[1] - val.random[0]) + val.random[0]
+				: val;
+
+		// Double sécurité avant exécution
+		if (scenarioInterrupted) {
+			console.log("🛑 Scénario interrompu (juste avant action)");
+			hideMagicClouds();
+			return;
+		}
+
+		switch (step.action) {
+			case "pause":
+				const pauseDuration = resolve(step.duration);
+				return setTimeout(() => {
+					if (!scenarioInterrupted) {
+						playScenario(scenario, index + 1);
+					} else {
+						console.log("🛑 Pause terminé");
+						//hideMagicClouds();
+					}
+				}, pauseDuration);
+
+			case "reqLov_pump":
+				reqLov_pump(resolve(step.value));
+				break;
+
+			case "reqLov_move":
+				reqLov_move(resolve(step.position), resolve(step.duration || 500));
+				break;
+
+			case "reqLov_loop":
+				reqLov_loop(resolve(step.min), resolve(step.max), resolve(step.speed));
+				break;
+
+			case "stop":
+				stopAll();
+				break;
+		}
+
+		const nextDelay = steps[index + 1]?.delay ? resolve(steps[index + 1].delay) : 0;
+
+		setTimeout(() => {
+			if (!scenarioInterrupted) {
+				playScenario(scenario, index + 1);
+			} else {
+				console.log("🛑 Interrompu avant étape suivante");
+				hideMagicClouds();
+			}
+		}, nextDelay);
+	}
+
+	async function loadScenario(btn) {
+		scenarioInterrupted = false; // <- on remet à zéro ici, quand on relance
+		const file = btn.dataset.scenario;
+
+		stopScenario();             // 🛑 stop logique
+		req_stopAll();              // 🛑 stop physique
+
+		await new Promise(resolve => setTimeout(resolve, 150)); // micro-pause
+
+		scenarioInterrupted = false; // ← très important ici
+
+		fetch(`/scenarios/${file}`)
+			.then(res => res.json())
+			.then(steps => {
+				console.log(`🎬 Scénario chargé : ${file}`);
+				log(`🎬 Scénario chargé : ${file}`);
+				document.querySelectorAll('[data-scenario]').forEach(b => b.classList.remove('active-scenario'));
+				btn.classList.add('active-scenario');
+				playScenario(steps);
+			})
+			.catch(err => console.error("⚠️ Erreur chargement scénario :", err));
+	}
+
+	function stopScenario() {
+		scenarioInterrupted = true;
+		log("🛑 Scénario arrêté par utilisateur");
+		document.querySelectorAll('[data-scenario]').forEach(b => b.classList.remove('active-scenario'));
+		/*setTimeout(() => {
+			scenarioInterrupted = false;
+		}, 300); // laisse passer un nouveau clean start après*/
+	}
+
+	function togglePauseScenario() {
+		const btn = document.getElementById('pauseScenarioBtn');
+		scenarioPaused = !scenarioPaused;
+
+		if (scenarioPaused) {
+			btn.classList.add('paused');
+			btn.innerText = "▶ Reprendre";
+			log("⏸ Scénario en pause");
+		} else {
+			btn.classList.remove('paused');
+			btn.innerText = "⏸ Pause";
+			log("▶ Reprise du scénario");
+			playScenario(currentScenarioState.scenario, currentScenarioState.index); // ← on reprend
+		}
+	}
+
+	function showMagicClouds() {
+		const cloud = document.getElementById('magicClouds');
+		cloud.style.display = "block";
+		setTimeout(() => {
+			cloud.style.opacity = 1;
+		}, 10); // Laisse le temps à l’élément d’être rendu
+	}
+
+	function hideMagicClouds() {
+		const cloud = document.getElementById('magicClouds');
+		cloud.style.opacity = 0;
+		setTimeout(() => {
+			cloud.style.display = "none";
+		}, 2000); // Correspond à la durée du fade-out CSS
+	}
+</script>
+
+</html>

@@ -1,0 +1,52 @@
+{
+    "loop": false,
+    "steps": [
+      { "comment": "Cycle 1 – petite exploration de surface" },
+      { "action": "reqLov_loop", "min": 0, "max": 30, "speed": 300 },
+      { "delay": 1200 },
+      { "action": "reqLov_loop", "min": 0, "max": 30, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "comment": "Cycle 2 – un peu plus loin" },
+      { "action": "reqLov_loop", "min": 5, "max": 35, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "action": "reqLov_loop", "min": 10, "max": 40, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "action": "reqLov_loop", "min": 15, "max": 45, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "action": "reqLov_loop", "min": 20, "max": 50, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "action": "reqLov_loop", "min": 25, "max": 55, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "action": "reqLov_loop", "min": 30, "max": 60, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "action": "reqLov_loop", "min": 35, "max": 65, "speed": 300 },
+      { "delay": 1200 },
+  
+      { "action": "reqLov_loop", "min": 40, "max": 70, "speed": 300 },
+      { "delay": 1200 },
+      { "action": "reqLov_loop", "min": 45, "max": 75, "speed": 300 },
+      { "delay": 1200 },
+      { "action": "reqLov_loop", "min": 50, "max": 80, "speed": 300 },
+      { "delay": 1200 },
+      { "action": "reqLov_loop", "min": 55, "max": 85, "speed": 300 },
+      { "delay": 1200 },
+      { "action": "reqLov_loop", "min": 60, "max": 90, "speed": 300 },
+      { "delay": 1200 },
+      { "action": "reqLov_loop", "min": 65, "max": 95, "speed": 300 },
+      { "delay": 1200 },
+      { "action": "reqLov_loop", "min": 70, "max": 100, "speed": 300 },
+      { "delay": 1200 },
+  
+      
+  
+      { "action": "stop" }
+    ]
+  }
+  

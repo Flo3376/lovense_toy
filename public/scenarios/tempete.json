@@ -1,0 +1,13 @@
+{
+    "loop": true,
+    "steps": [
+      { "comment": "Ça chauffe d’entrée de jeu" },
+      { "action": "reqLov_pump", "value": { "random": [0.7, 0.9] } },
+      { "delay": 300 },
+      { "action": "reqLov_move", "position": { "random": [0.6, 1.0] }, "duration": 400 },
+      { "delay": 200 },
+      { "action": "reqLov_move", "position": 0, "duration": 300 },
+      { "delay": 200 },
+      { "action": "pause", "duration": 100 }
+    ]
+  }

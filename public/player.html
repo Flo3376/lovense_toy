@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Lecture du plaisir</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/init2.css">
+
+</head>
+
+<body>
+    <div id="interface-wrap">
+        <header>
+            <div class="header-bar">
+                <h1>🎬 Lecture synchronisée : <div id="chrono">
+                        <span id="chrono-seconds">0.0</span>
+                        <span id="chrono-hms" style="font-size: 14px; color: #aaa;">00:00:00</span>
+                    </div>
+                </h1>
+                <button class="save-btn" onclick="sauvegarderScenario()">💾 Sauvegarder</button>
+                <button onclick="toggleControls()">🎛️ Afficher les contrôles</button>
+                <button id="toggle-scenario"
+                    onclick="scenarioVerrouille = !scenarioVerrouille; this.textContent = scenarioVerrouille ? '🔒 Scénario verrouillé' : '🔓 Scénario actif';">
+                    🔓 Scénario actif
+                </button>
+            </div>
+        </header>
+
+        <div class="console-section">
+            <div id="console">
+                <!-- Logs et messages -->
+            </div>
+        </div>
+
+        <div class="video-scenario">
+            <section class="video-section">
+                <video id="video" controls>
+                    <source src="videos/demo.mp4" type="video/mp4">
+                    Votre navigateur ne supporte pas la lecture vidéo.
+                </video>
+            </section>
+
+            <section class="scenario-section">
+                <div id="scenario-list">
+                    <div id="editionZone"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div class="mount_table">
+        <div id="ensemble-panel" class="controle-container" style="display: none;">
+
+            <!-- ENSEMBLE -->
+            <div class="ensemble">
+                <span class="group-title">➡️ Move</span>
+
+                <!-- SOUS-ENSEMBLE -->
+                <div class="sous-ensemble">
+
+                    <div class="control-card" style="background-color: #cde4f2;" onmouseenter="reqLov_move(0.0,500)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0,500)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">0%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #cde4f2;" onmouseenter="reqLov_move(0.25,500)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0.25,500)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">25%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #cde4f2;" onmouseenter="reqLov_move(0.5,500)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0.50,500)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">50%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #cde4f2;" onmouseenter="reqLov_move(0.75,500)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0.75,500)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">75%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #cde4f2;" onmouseenter="reqLov_move(1.0,500)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(1,500)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">100%</div>
+                    </div>
+
+                    <div class="clear"></div>
+                </div>
+
+                <!-- Autre SOUS-ENSEMBLE -->
+                <div class="sous-ensemble">
+                    <div class="control-card" style="background-color: #fff3b0;" onmouseenter="reqLov_move(0.0,250)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0,250)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">0%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #fff3b0;" onmouseenter="reqLov_move(0.25,250)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0.25,250)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">25%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #fff3b0;" onmouseenter="reqLov_move(0.5,250)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0.50,250)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">50%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #fff3b0;" onmouseenter="reqLov_move(0.75,250)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(0.75,250)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">75%</div>
+                    </div>
+                    <div class="control-card" style="background-color: #fff3b0;" onmouseenter="reqLov_move(1.0,250)"
+                        onmouseleave="stopAll()" onclick="add_Lov_Move(1,250)">
+                        <div class="card-icon">➡️</div>
+                        <div class="card-label">100%</div>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <!-- Autre SOUS-ENSEMBLE -->
+                <div class="sous-ensemble">
+                    <div>
+                        <div>
+                            <div class="control-card" style="background-color: #fdd5d5;"
+                                onmouseenter="reqLov_move(0.0,50)" onmouseleave="stopAll()"
+                                onclick="add_Lov_Move(0,50)">
+                                <div class="card-icon">➡️</div>
+                                <div class="card-label">0%</div>
+                            </div>
+                            <div class="control-card" style="background-color: #fdd5d5;"
+                                onmouseenter="reqLov_move(0.25,50)" onmouseleave="stopAll()"
+                                onclick="add_Lov_Move(0.25,50)">
+                                <div class="card-icon">➡️</div>
+                                <div class="card-label">25%</div>
+                            </div>
+                            <div class="control-card" style="background-color: #fdd5d5;"
+                                onmouseenter="reqLov_move(0.5,50)" onmouseleave="stopAll()"
+                                onclick="add_Lov_Move(0.50,50)">
+                                <div class="card-icon">➡️</div>
+                                <div class="card-label">50%</div>
+                            </div>
+                            <div class="control-card" style="background-color: #fdd5d5;"
+                                onmouseenter="reqLov_move(0.75,50)" onmouseleave="stopAll()"
+                                onclick="add_Lov_Move(0.75,50)">
+                                <div class="card-icon">➡️</div>
+                                <div class="card-label">75%</div>
+                            </div>
+                            <div class="control-card" style="background-color: #fdd5d5;"
+                                onmouseenter="reqLov_move(1.0,50)" onmouseleave="stopAll()"
+                                onclick="add_Lov_Move(1,50)">
+                                <div class="card-icon">➡️</div>
+                                <div class="card-label">100%</div>
+                            </div>
+                            <div class="control-card" style="color: black; background-color: hsl(0, 100%, 50%);"
+                                onmouseenter="this.style.boxShadow='0 0 10px red';"
+                                onmouseleave="this.style.boxShadow='none';"
+                                onclick="flashCard(this); stopAll();add_Stop()">
+                                <div class="card-icon">🛑</div>
+                                <div class="card-label">STOP</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Autre ENSEMBLE -->
+            <div class="ensemble">
+                <!-- SOUS-ENSEMBLE -->
+                <div class="sous-ensemble">
+                    <span class="group-title">💦Pump</span>
+                    <div class="control-card" style="color: black; background-color: hsl(200, 100%, 90%)"
+                        onmouseenter="reqLov_pump(0.05)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.50)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">5%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(205, 100%, 88%)"
+                        onmouseenter="reqLov_pump(0.10)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.10)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">10%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(210, 100%, 86%)"
+                        onmouseenter="reqLov_pump(0.15)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.15)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">15%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(220, 100%, 84%)"
+                        onmouseenter="reqLov_pump(0.20)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.20)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">20%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(230, 100%, 82%)"
+                        onmouseenter="reqLov_pump(0.25)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.25)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">25%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(240, 100%, 80%)"
+                        onmouseenter="reqLov_pump(0.30)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.30)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">30%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(250, 100%, 78%)"
+                        onmouseenter="reqLov_pump(0.35)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.35)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">35%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(260, 100%, 76%)"
+                        onmouseenter="reqLov_pump(0.40)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.40)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">40%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(270, 100%, 74%)"
+                        onmouseenter="reqLov_pump(0.45)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.45)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">45%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(280, 100%, 72%)"
+                        onmouseenter="reqLov_pump(0.50)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.50)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">50%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(290, 100%, 70%)"
+                        onmouseenter="reqLov_pump(0.55)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.55)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">55%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(300, 100%, 68%)"
+                        onmouseenter="reqLov_pump(0.60)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.60)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">60%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(310, 100%, 66%)"
+                        onmouseenter="reqLov_pump(0.65)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.65)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">65%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(320, 100%, 64%)"
+                        onmouseenter="reqLov_pump(0.70)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.70)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">70%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(330, 100%, 62%)"
+                        onmouseenter="reqLov_pump(0.75)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.75)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">75%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(340, 100%, 60%)"
+                        onmouseenter="reqLov_pump(0.80)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Pump(0.80)">
+                        <div class="card-icon">💦</div>
+                        <div class="card-label">80%</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(0, 100%, 50%);"
+                        onmouseenter="this.style.boxShadow='0 0 10px red';" onmouseleave="this.style.boxShadow='none';"
+                        onclick="flashCard(this); stopAll();add_Stop()">
+                        <div class="card-icon">🛑</div>
+                        <div class="card-label">STOP</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Autre ENSEMBLE -->
+            <div class="ensemble">
+                <!-- SOUS-ENSEMBLE -->
+                <div class="sous-ensemble">
+                    <span class="group-title">🔁
+                        Loop</span>
+                    <!-- Lente - Bleu clair boosté -->
+                    <div class="control-card" style="background-color: hsl(200, 100%, 90%); color: black;"
+                        onmouseenter="reqLov_loop(0, 100, 600)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(0, 100, 600)">
+                        <div class="card-icon">🐢</div>
+                        <div class="card-label">0–100<br>600ms</div>
+                    </div>
+
+                    <!-- Moyenne - Violet boosté -->
+                    <div class="control-card" style="background-color: hsl(260, 100%, 76%); color: black;"
+                        onmouseenter="reqLov_loop(0, 100, 300)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(0, 100, 300)">
+                        <div class="card-icon">🌀</div>
+                        <div class="card-label">0–100<br>300ms</div>
+                    </div>
+
+                    <!-- Rapide - Rouge rosé boosté -->
+                    <div class="control-card" style="background-color: hsl(340, 100%, 60%); color: black;"
+                        onmouseenter="reqLov_loop(0, 100, 100)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(0, 100, 100)">
+                        <div class="card-icon">⚡</div>
+                        <div class="card-label">0–100<br>100ms</div>
+                    </div>
+                </div>
+                <!-- SOUS-ENSEMBLE LOOP 0–33 -->
+                <div class="sous-ensemble">
+                    <!-- Lente - Bleu clair -->
+                    <div class="control-card" style="background-color: hsl(200, 100%, 90%); color: black;"
+                        onmouseenter="reqLov_loop(0, 33, 300)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(0, 33, 300)">
+                        <div class="card-icon">🐢</div>
+                        <div class="card-label">0–33<br>300ms</div>
+                    </div>
+
+                    <!-- Moyenne - Violet -->
+                    <div class="control-card" style="background-color: hsl(260, 100%, 76%); color: black;"
+                        onmouseenter="reqLov_loop(0, 33, 150)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(0, 33, 150)">
+                        <div class="card-icon">🌀</div>
+                        <div class="card-label">0–33<br>150s</div>
+                    </div>
+
+                    <!-- Rapide - Rouge rosé -->
+                    <div class="control-card" style="background-color: hsl(340, 100%, 60%); color: black;"
+                        onmouseenter="reqLov_loop(0, 33, 50)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(0, 33, 50)">
+                        <div class="card-icon">⚡</div>
+                        <div class="card-label">0–33<br>50ms</div>
+                    </div>
+                </div>
+
+                <div class="sous-ensemble">
+                    <!-- Lente -->
+                    <div class="control-card" style="background-color: hsl(200, 100%, 90%); color: black;"
+                        onmouseenter="reqLov_loop(33, 66, 300)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(33, 66, 300)">
+                        <div class="card-icon">🐢</div>
+                        <div class="card-label">33–66<br>300ms</div>
+                    </div>
+
+                    <!-- Moyenne -->
+                    <div class="control-card" style="background-color: hsl(260, 100%, 76%); color: black;"
+                        onmouseenter="reqLov_loop(33, 66, 150)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(33, 66, 150)">
+                        <div class="card-icon">🌀</div>
+                        <div class="card-label">33–66<br>150ms</div>
+                    </div>
+
+                    <!-- Rapide -->
+                    <div class="control-card" style="background-color: hsl(340, 100%, 60%); color: black;"
+                        onmouseenter="reqLov_loop(33, 66, 50)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(33, 66, 50)">
+                        <div class="card-icon">⚡</div>
+                        <div class="card-label">33–66<br>50ms</div>
+                    </div>
+                </div>
+                <div class="sous-ensemble">
+                    <!-- Lente -->
+                    <div class="control-card" style="background-color: hsl(200, 100%, 90%); color: black;"
+                        onmouseenter="reqLov_loop(66, 100, 300)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(66, 100, 300)">
+                        <div class="card-icon">🐢</div>
+                        <div class="card-label">66–100<br>300ms</div>
+                    </div>
+
+                    <!-- Moyenne -->
+                    <div class="control-card" style="background-color: hsl(260, 100%, 76%); color: black;"
+                        onmouseenter="reqLov_loop(66, 100, 150)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(66, 100, 150)">
+                        <div class="card-icon">🌀</div>
+                        <div class="card-label">66–100<br>150ms</div>
+                    </div>
+
+                    <!-- Rapide -->
+                    <div class="control-card" style="background-color: hsl(340, 100%, 60%); color: black;"
+                        onmouseenter="reqLov_loop(66, 100, 50)" onmouseleave="stopAll()"
+                        onclick="flashCard(this); add_Lov_Loop(66, 100, 50)">
+                        <div class="card-icon">⚡</div>
+                        <div class="card-label">66–100<br>50ms</div>
+                    </div>
+                    <div class="control-card" style="color: black; background-color: hsl(0, 100%, 50%);"
+                        onmouseenter="this.style.boxShadow='0 0 10px red';" onmouseleave="this.style.boxShadow='none';"
+                        onclick="flashCard(this); stopAll();add_Stop()">
+                        <div class="card-icon">🛑</div>
+                        <div class="card-label">STOP</div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div id="rythm-panel" class="controle-container container-fluid" style="width: 98%;">
+            <h3>🧪 Rythm Designer</h3>
+
+            <div class="row">
+
+                <!-- Sliders -->
+                <div class="col-3">
+                    <label>Course (départ) : <span id="course-val">0.0</span></label><br>
+                    <input type="range" min="0" max="1" step="0.01" value="0" id="course-slider"
+                        class="form-range"><br><br>
+
+                    <label>Amplitude (fin) : <span id="amplitude-val">1.0</span></label><br>
+                    <input type="range" min="0" max="1" step="0.01" value="1" id="amplitude-slider" class="form-range">
+                </div>
+
+                <!-- TAP bouton + Tempo -->
+                <div class="col-2 text-center">
+                    <button id="tempo-pad" class="btn btn-secondary btn-lg mb-3">🖱️ TAP</button><br>
+                    <label>Moyenne: <span id="tempo-display">--</span> ms</label>
+                </div>
+
+                <!-- Panneau à venir -->
+                <div class="col-4">
+                    <!-- Contenu à venir -->
+                    <div class="border p-3" style="height: 100px; background: #1e1e1e; color: #f0f0f0;">
+                        Panneau perso (bientôt 🎛️)
+                    </div>
+                </div>
+
+                <!-- Boutons Aller-retour / Générer -->
+                <div class="col-3 d-flex flex-column justify-content-between">
+                    <button id="mode-toggle" class="btn btn-outline-info mb-3">🔁 Aller-retour</button>
+                    <button onclick="genererSequence()" class="btn btn-outline-success">⚙️ Générer séquence</button>
+                    <button id="test-live" class="btn btn-outline-warning mb-2">🟢 Test Live</button>
+                    <button id="test-stop" class="btn btn-outline-danger mb-3">🔴 Stop Test</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    const ws = new WebSocket(`ws://${location.host}`); // Connexion WebSocket
+    const params = window.location.pathname.split('/');
+    const videoFile = params[params.length - 1];
+    const videoName = videoFile.replace(/\.[^/.]+$/, ""); // demo.mp4 -> demo
+
+    const video = document.getElementById('video');
+    video.src = `/videos/${videoFile}`;
+
+    const chrono = document.getElementById('chrono');
+    const editionZone = document.getElementById('editionZone');
+    const scenario = [];
+    const historique = [];
+    let id_commande = 1;
+    let scenarioVerrouille = false;
+
+    ws.onopen = () => {
+        console.log('✅ WebSocket connecté');
+        resetId(); // ⬅️ C'est ici qu'on appelle resetId au chargement
+        ws.send(JSON.stringify({ type: "is_com9_available" }));
+
+        /*if (!com9Available) {
+            hideCom9Blocks();
+        }*/
+
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "get_battery" }));
+            //console.log("📡 Demande batterie envoyée depuis frontend");
+        }
+
+        function resetId() {
+            currentId = 0;
+            console.log('🔄 ID remis à 1, envoi reset_id au port série');
+            log('🔄 ID remis à 1, envoi reset_id au port série');
+        }
+
+        setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "get_battery" }));
+                //console.log("📡 Demande batterie envoyée depuis frontend");
+            }
+        }, 60000); // toutes les 60 secondes
+    };
+
+    const logs = [];
+
+    function log(msg) {
+        logs.push(msg);
+        if (logs.length > 5) logs.shift();
+        const box = document.getElementById('console');
+        box.innerText = logs.join('\n');
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function afficherScenario() {
+        editionZone.innerHTML = '<p>Scénario</p>';
+        scenario.sort((a, b) => a.time - b.time);
+
+        scenario.forEach((step, i) => {
+            const line = document.createElement('div');
+            line.className = 'scenario-line';
+            line.dataset.index = i;
+
+            const timeEl = document.createElement('span');
+            timeEl.className = 'clicable-time';
+            timeEl.textContent = `${step.time}s`;
+            timeEl.onclick = () => { video.currentTime = step.time; };
+
+            const actionEl = document.createElement('span');
+            actionEl.className = 'scenario-action';
+            actionEl.textContent = formatAction(step);
+            actionEl.ondblclick = () => { éditerAction(i); };
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = '❌';
+            deleteBtn.onclick = () => { supprimerAction(i); };
+
+            line.appendChild(timeEl);
+            line.appendChild(document.createTextNode(' → '));
+            line.appendChild(actionEl);
+            line.appendChild(deleteBtn);
+
+            if (Math.floor(video.currentTime) === Math.floor(step.time)) {
+                line.classList.add('highlight');
+            }
+
+            editionZone.appendChild(line);
+        });
+    }
+
+    function scrollToActiveLine() {
+        const line = editionZone.querySelector('.highlight');
+        if (line) {
+            line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function formatAction(step) {
+        switch (step.action) {
+            case 'reqLov_pump':
+                return `reqLov_pump(${step.value})`;
+            case 'reqLov_move':
+                return `reqLov_move(${step.position}, ${step.duration})`;
+            case 'reqLov_loop':
+                return `reqLov_loop(${step.min}, ${step.max}, ${step.speed})`;
+            case 'stop':
+                return 'stop()';
+            default:
+                return step.action;
+        }
+    }
+
+    function éditerAction(index) {
+        const step = scenario[index];
+        //const appelInitial = formatAction(step);
+        const nouveau = prompt("Modifie l’appel (ex: reqLov_pump(0.4))", formatAction(step));
+        if (!nouveau) return;
+
+        const nouveauTime = prompt(`Modifie le temps en secondes (actuellement ${step.time})`, step.time);
+        const parsedTime = Math.round(parseFloat(nouveauTime) * 2) / 2;
+
+        if (isNaN(parsedTime)) {
+            alert("⛔ Temps invalide");
+            return;
+        }
+
+        const match = nouveau.match(/^(\w+)\((.*)\)$/);
+        if (!match) {
+            alert("⚠️ Format d'appel invalide");
+            return;
+        }
+
+        const action = match[1];
+        const args = match[2].split(',').map(a => parseFloat(a.trim()));
+        const newStep = { time: parsedTime, action };
+
+        switch (action) {
+            case 'reqLov_pump':
+                newStep.value = args[0];
+                break;
+            case 'reqLov_move':
+                [newStep.position, newStep.duration] = args;
+                break;
+            case 'reqLov_loop':
+                [newStep.min, newStep.max, newStep.speed] = args;
+                break;
+        }
+
+        scenario[index] = newStep;
+        afficherScenario();
+    }
+    function add_Lov_Pump(val) {
+        const time = Math.round(video.currentTime * 2) / 2;
+        const step = {
+            time,
+            action: "reqLov_pump",
+            value: parseFloat(val.toFixed(2))
+        };
+        scenario.push(step);
+        historique.push({ type: 'ajout', data: step });
+        afficherScenario();
+    }
+
+    function add_Lov_Move(pos, dur) {
+        const time = Math.round(video.currentTime * 2) / 2;
+        const step = {
+            time,
+            action: "reqLov_move",
+            position: parseFloat(pos),
+            duration: parseInt(dur)
+        };
+        scenario.push(step);
+        historique.push({ type: 'ajout', data: step });
+        afficherScenario();
+    }
+
+    function add_Lov_Loop(min, max, speed) {
+        const time = Math.round(video.currentTime * 2) / 2;
+        const step = {
+            time,
+            action: "reqLov_loop",
+            min: parseInt(min),
+            max: parseInt(max),
+            speed: parseInt(speed)
+        };
+        scenario.push(step);
+        historique.push({ type: 'ajout', data: step });
+        afficherScenario();
+    }
+
+    function add_Stop() {
+        const time = Math.round(video.currentTime * 2) / 2;
+        const step = {
+            time,
+            action: "stop"
+        };
+        scenario.push(step);
+        historique.push({ type: 'ajout', data: step });
+        afficherScenario();
+    }
+
+    function supprimerAction(index) {
+        const supprimée = scenario.splice(index, 1)[0];
+        historique.push({ type: 'suppression', data: supprimée, index });
+        afficherScenario();
+    }
+
+    function annulerDernier() {
+        const dernière = historique.pop();
+        if (!dernière) return;
+
+        if (dernière.type === 'ajout') {
+            const index = scenario.findIndex(a => a.time === dernière.data.time && a.action === dernière.data.action);
+            if (index >= 0) scenario.splice(index, 1);
+        } else if (dernière.type === 'suppression') {
+            scenario.splice(dernière.index, 0, dernière.data);
+        }
+        afficherScenario();
+    }
+
+    let dernierStep = null;
+
+    function executeScenarioStep(currentTime) {
+
+        if (scenarioVerrouille) return;
+
+        const roundedTime = Math.round(currentTime * 2) / 2;
+        const step = scenario.find(s => s.time === roundedTime);
+
+
+        if (!step || step.time === dernierStep) return;
+
+        dernierStep = step.time;
+
+        console.log(step);
+        const actionName = step.action.split('(')[0];
+        switch (step.action) {
+            case "reqLov_pump":
+                reqLov_pump(step.value);
+                break;
+
+            case "reqLov_move":
+                reqLov_move(step.position, step.duration || 500);
+                break;
+
+            case "reqLov_loop":
+                reqLov_loop(step.min, step.max, step.speed);
+                break;
+
+            case "stop":
+                stopAll();
+                break;
+
+            default:
+                console.warn("⚠️ Action inconnue :", step.action);
+                break;
+        }
+    }
+
+    function sauvegarderScenario() {
+        fetch(`/rythmo/${videoName}.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(scenario)
+        }).then(r => r.json())
+            .then(resp => console.log('💾 Sauvegardé :', resp));
+    }
+
+    function chargerScenario() {
+        fetch(`/rythmo/${videoName}.json`)
+            .then(r => r.json())
+            .then(data => {
+                scenario.push(...data);
+                afficherScenario();
+            });
+    }
+
+    function highlightCurrentLine() {
+        const current = Math.floor(video.currentTime);
+        const lines = editionZone.querySelectorAll('.scenario-line');
+
+        lines.forEach((line, i) => {
+            const step = scenario[i];
+            if (Math.floor(step.time) === current) {
+                lines.forEach(l => l.classList.remove('highlight'));
+                line.classList.add('highlight');
+                return; // quitte cette boucle
+            }
+        });
+    }
+     let timer=0;
+    video.addEventListener('timeupdate', () => {
+        const t = video.currentTime;
+        timer= video.currentTime;
+        const min = Math.floor(t / 60);
+        const sec = Math.floor(t % 60);
+        const demi = Math.floor((t % 1) * 10) >= 5 ? '5' : '0';
+
+        // ➤ Ligne du haut : secondes.demi
+        const secondesTotal = Math.floor(t);
+        document.getElementById('chrono-seconds').textContent = `${secondesTotal}.${demi} s`;
+
+        // ➤ Ligne du bas : HH:MM:SS
+        const totalSec = Math.floor(t);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+
+        const formatted = [
+            h.toString().padStart(2, '0'),
+            m.toString().padStart(2, '0'),
+            s.toString().padStart(2, '0')
+        ].join(':');
+
+        document.getElementById('chrono-hms').textContent = formatted;
+
+        highlightCurrentLine();
+
+        if (!video.paused) {
+            scrollToActiveLine(video.currentTime);
+        }
+
+        executeScenarioStep(video.currentTime);
+    });
+
+    video.addEventListener('focus', () => {
+        video.blur();
+    });
+
+
+    video.addEventListener('pause', () => {
+        console.log('demande la pause');
+        stopAll();
+    });
+    video.addEventListener('seeked', () => {
+        dernierStep = null;
+    });
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            console.log('espace'); console.log(video.paused);
+
+            if (video.paused) {
+                console.log('⏸️ Vidéo en route ');
+                video.play();
+            } else {
+                console.log('⏸️ Vidéo en pause → on arrête le toy');
+                video.pause();
+
+            }
+        }
+        if (e.ctrlKey && e.key === 'z') annulerDernier();
+        if (e.key === 'q') {
+            dernierStep = null;
+            video.currentTime = Math.max(0, Math.round((video.currentTime - 0.5) * 2) / 2);
+            console.log("timer : " + video.currentTime);
+            timer= video.currentTime;
+        }
+
+        if (e.key === 'd') {
+            dernierStep = null;
+            video.currentTime = Math.min(video.duration, Math.round((video.currentTime + 0.5) * 2) / 2);
+            console.log("timer : " + video.currentTime);
+            timer= video.currentTime;
+        }
+        if (e.key.toLowerCase() === 'e') {
+            toggleControls();
+        }
+    });
+
+    chargerScenario();
+
+    function stopAll() {
+        req_stopAll();
+    }
+
+    function req_stopAll() {
+        id_commande++;
+        currentCommandId = id_commande;
+
+        ctrl_hardStop(); // Pour l’ensemble Lovense + COM9
+    }
+
+    function ctrl_hardStop() {
+        isLoopActive = false;
+        ws.send(JSON.stringify({ type: 'stop' }));
+        console.log('🛑 [ctrl_hardStop] Stop envoyé');
+        log('🛑 [ctrl_hardStop] Stop envoyé');
+    }
+
+    function reqLov_pump(intensity) {
+        id_commande++;
+        currentCommandId = id_commande;
+
+        //stopScenario();     // logique
+        //ctrl_hardStop();    // physique
+
+        //document.getElementById('pumpRange').value = intensity;
+        //document.getElementById('pumpValue').textContent = intensity.toFixed(2);
+
+        setTimeout(() => {
+            primLov_pump(intensity, currentCommandId);
+        }, 150);
+    }
+
+    function reqLov_loop(min, max, speed) {
+        id_commande++;
+        currentCommandId = id_commande;
+
+
+        ctrl_loopLov(min, max, speed, currentCommandId);
+    }
+
+    function ctrl_loopLov(min, max, speed, id) {
+        isLoopActive = true;
+
+        ws.send(JSON.stringify({
+            type: 'customVibe',
+            min: min,
+            max: max,
+            speed: speed,
+            id_commande: id
+        }));
+        console.log(`🌀 [customLoop] min: ${min}%, max: ${max}%, duration: ${speed}ms (ID ${id})`);
+        log(`🌀 [customLoop] min: ${min}%, max: ${max}%, duration: ${speed}ms (ID ${id})`);
+    }
+
+    function primLov_pump(intensity, id) {
+        ws.send(JSON.stringify({
+            type: 'pump',
+            intensity,
+            id_commande: id
+        }));
+        console.log(`📡 [primLov_pump] Intensité ${Math.round(intensity * 100)}% (ID ${id})`);
+        log(`📡 [primLov_pump] Intensité ${Math.round(intensity * 100)}% (ID ${id})`);
+    }
+
+    function reqLov_move(position, duration) {
+        id_commande++; // Nouvelle commande = nouveau token
+        //ctrl_hardStop(); // Coupe toute action précédente
+
+        setTimeout(() => {
+            primLov_move(position, duration, id_commande);
+        }, 100); // ou 200ms si nécessaire
+    }
+
+    function primLov_move(position, duration, id) {
+        ws.send(JSON.stringify({
+            type: 'move',
+            position: position,   // entre 0.0 et 1.0
+            duration: duration,   // en ms
+            id_commande: id
+        }));
+        console.log(`➡️ [prim_move] Vers ${position * 100}% en ${duration}ms (ID ${id})`);
+        log(`➡️ [prim_move] Vers ${position * 100}% en ${duration}ms (ID ${id})`);
+    }
+
+    function flashCard(element) {
+        element.style.boxShadow = '0 0 20px lime';
+        setTimeout(() => {
+            element.style.boxShadow = '0 0 8px deeppink';
+        }, 300);
+    }
+    window.addEventListener('mouseleave', (e) => {
+        if (!e.relatedTarget && !e.toElement) {
+            console.log('🛑 Souris sortie de la page → arrêt du joujou');
+            stopAll();
+        }
+    });
+
+    let controlsVisible = false;
+
+    function toggleControls() {
+        const panel = document.getElementById('ensemble-panel');
+        controlsVisible = !controlsVisible;
+        panel.style.display = controlsVisible ? 'block' : 'none';
+
+        const btn = document.querySelector('button[onclick="toggleControls()"]');
+        btn.textContent = controlsVisible ? '🎛️ Masquer les contrôles' : '🎛️ Afficher les contrôles';
+    }
+
+    let tapTimes = [];
+    let allerRetour = true;
+
+    document.getElementById('course-slider').oninput = e => {
+        document.getElementById('course-val').textContent = Number(e.target.value).toFixed(2);
+    };
+
+    document.getElementById('amplitude-slider').oninput = e => {
+        document.getElementById('amplitude-val').textContent = Number(e.target.value).toFixed(2);
+    };
+
+    document.getElementById('mode-toggle').onclick = () => {
+        allerRetour = !allerRetour;
+        document.getElementById('mode-toggle').textContent = allerRetour ? '🔁 Aller-retour' : '➡️ Aller';
+    };
+
+    document.getElementById('tempo-pad').onclick = () => {
+        const now = Date.now();
+        tapTimes.push(now);
+
+        if (tapTimes.length > 5) tapTimes.shift();
+
+        if (tapTimes.length >= 2) {
+            const intervals = tapTimes.slice(1).map((t, i) => t - tapTimes[i]);
+            const moyenne = Math.round(intervals.reduce((a, b) => a + b) / intervals.length);
+            document.getElementById('tempo-display').innerHTML = `${moyenne} ms <br> ${moyenne/2} `;
+        }
+    };
+
+    function genererSequence() {
+        const start = parseFloat(document.getElementById('course-slider').value);
+        const end = parseFloat(document.getElementById('amplitude-slider').value);
+        const tempoText = document.getElementById('tempo-display').textContent;
+
+        if (tempoText === '--') {
+            alert("⚠️ Clique sur le pad pour définir un tempo !");
+            return;
+        }
+
+        const duration = tempoText; // en ms
+        let speed = parseInt(duration); // une boucle = aller 
+        let timing = timer;
+
+        if (modeAllerRetour) {
+            speed = parseInt(duration / 2); // une boucle = aller + retour
+        }
+
+        // Ajout dans le scénario
+        scenario.push({
+            time: timing,
+            action: "reqLov_loop",
+            min: Math.round(start * 100),
+            max: Math.round(end * 100),
+            speed: speed
+        });
+
+        console.log(`🎯 Loop ajoutée : reqLov_loop(${Math.round(start * 100)}, ${Math.round(end * 100)}, ${speed})`);
+        afficherScenario();
+    }
+
+    let modeAllerRetour = true;
+
+    const modeBtn = document.getElementById('mode-toggle');
+    modeBtn.onclick = () => {
+        modeAllerRetour = !modeAllerRetour;
+        modeBtn.innerHTML = modeAllerRetour ? "🔁 Aller-retour" : "➡️ Aller";
+    };
+
+    document.getElementById('test-live').onclick = () => {
+        const start = parseFloat(document.getElementById('course-slider').value);
+        const end = parseFloat(document.getElementById('amplitude-slider').value);
+        let tempo = parseInt(document.getElementById('tempo-display').textContent) || 500;
+
+        const id = Date.now(); // ID unique pour cette commande
+
+        if (modeAllerRetour) {
+            tempo = Math.round(tempo / 2);
+        }
+
+        ctrl_loopLov(Math.round(start * 100), Math.round(end * 100), tempo, id)
+        //console.log("🎛️ Test Live envoyé :", commande);
+    };
+
+    document.getElementById('test-stop').onclick = () => {
+        //socket.send(JSON.stringify({ type: "stop" }));
+        //console.log("⛔ Stop Test envoyé");
+        stopAll()
+    };
+
+</script>
+
+<script>
+    function ajusterLayout() {
+        const interfaceWrap = document.getElementById('interface-wrap');
+        const mountTable = document.querySelector('.mount_table');
+        const video = document.getElementById('video');
+        const scenario = document.querySelector('.scenario-section');
+
+        if (interfaceWrap && mountTable) {
+            const rect = interfaceWrap.getBoundingClientRect();
+            mountTable.style.top = `${rect.height}px`;
+        }
+
+        if (video && scenario) {
+            const videoRect = video.getBoundingClientRect();
+            scenario.style.maxHeight = `${videoRect.height}px`;
+        }
+    }
+
+    window.addEventListener('load', ajusterLayout);
+    window.addEventListener('resize', ajusterLayout);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

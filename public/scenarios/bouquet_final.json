@@ -1,0 +1,61 @@
+{
+    "loop": false,
+    "steps": [
+      { "comment": "Phase 1 – montée des vibrations" },
+      { "action": "reqLov_pump", "value": 0.1 },
+      { "delay": 1500 },
+      { "action": "reqLov_pump", "value": 0.17 },
+      { "delay": 1500 },
+      { "action": "reqLov_pump", "value": 0.24 },
+      { "delay": 1500 },
+      { "action": "reqLov_pump", "value": 0.31 },
+      { "delay": 1500 },
+      { "action": "reqLov_pump", "value": 0.45 },
+      { "delay": 1200 },
+      { "action": "reqLov_pump", "value": 0.6 },
+      { "delay": 1000 },
+      { "action": "reqLov_pump", "value": 0.75 },
+      { "delay": 1000 },
+      { "action": "reqLov_pump", "value": 0.8 },
+      { "delay": 800 },
+  
+      { "comment": "Phase 2 – entrée en fullstroke progressif" },
+      { "action": "reqLov_move", "position": 0.2, "duration": 1200 },
+      { "delay": 300 },
+      { "action": "reqLov_move", "position": 1, "duration": 1200 },
+      { "delay": 300 },
+      
+      { "action": "reqLov_move", "position": 0.2, "duration": 1000 },
+      { "delay": 200 },
+      { "action": "reqLov_move", "position": 1, "duration": 1000 },
+      { "delay": 200 },
+  
+      { "action": "reqLov_move", "position": 0.1, "duration": 800 },
+      { "delay": 200 },
+      { "action": "reqLov_move", "position": 1, "duration": 800 },
+      { "delay": 200 },
+  
+      { "action": "reqLov_move", "position": 0, "duration": 600 },
+      { "delay": 100 },
+      { "action": "reqLov_move", "position": 1, "duration": 600 },
+      { "delay": 100 },
+  
+      { "comment": "Climax : full strokes rapides x3" },
+      { "action": "reqLov_move", "position": 0, "duration": 400 },
+      { "delay": 80 },
+      { "action": "reqLov_move", "position": 1, "duration": 400 },
+      { "delay": 80 },
+      { "action": "reqLov_move", "position": 0, "duration": 400 },
+      { "delay": 80 },
+      { "action": "reqLov_move", "position": 1, "duration": 400 },
+      { "delay": 80 },
+      { "action": "reqLov_move", "position": 0, "duration": 400 },
+      { "delay": 80 },
+      { "action": "reqLov_move", "position": 1, "duration": 400 },
+      { "delay": 500 },
+  
+      { "comment": "Fin – arrêt propre" },
+      { "action": "stop" }
+    ]
+  }
+  

@@ -1,0 +1,10 @@
+[
+    { "action": "reqLov_loop", "min": 20, "max": 80, "speed": 300 },
+    { "delay": 6000 },
+    { "action": "reqLov_pump", "value": 0.8 },
+    { "delay": 3000 },
+    { "action": "pause", "duration": 1500 },
+    { "action": "reqLov_move", "position": 0.9, "duration": 300 },
+    { "delay": 500 },
+    { "action": "stop" }
+  ]

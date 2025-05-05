@@ -1,0 +1,25 @@
+{
+    "loop": true,
+    "steps": [
+      { "comment": "Caresse fluide avec petit va-et-vient" },
+      { "action": "reqLov_loop", "min": 30, "max": 60, "speed": 280 },
+      { "delay": 5000 },
+  
+      { "comment": "Pause légère pour relâcher" },
+      { "action": "pause", "duration": 1500 },
+  
+      { "comment": "Petit tapotement doux" },
+      { "action": "reqLov_pump", "value": 0.1 },
+      { "delay": 1000 },
+      { "action": "reqLov_pump", "value": 0.17 },
+      { "delay": 1200 },
+  
+      { "comment": "Reprise du mouvement fluide" },
+      { "action": "reqLov_loop", "min": 20, "max": 50, "speed": 300 },
+      { "delay": 5000 },
+  
+      { "comment": "Micro-pause imprévisible" },
+      { "action": "pause", "duration": { "random": [1000, 2000] } }
+    ]
+  }
+  

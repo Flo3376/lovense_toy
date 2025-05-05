@@ -1,0 +1,12 @@
+{
+    "loop": true,
+    "steps": [
+      { "comment": "Est-ce que ça a bougé ? 🤔" },
+      { "action": "reqLov_pump", "value": { "random": [0.01, 0.05] } },
+      { "delay": { "random": [1000, 2000] } },
+      { "action": "pause", "duration": 1500 },
+      { "action": "reqLov_move", "position": { "random": [0.05, 0.15] }, "duration": 400 },
+      { "delay": { "random": [1000, 3000] } }
+    ]
+  }
+  

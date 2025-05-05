@@ -1,0 +1,14 @@
+{
+    "loop": true,
+    "steps": [
+      { "comment": "Début en douceur, petite curiosité" },
+      { "action": "reqLov_move", "position": { "random": [0.1, 0.3] }, "duration": 600 },
+      { "delay": { "random": [800, 1200] } },
+      { "action": "reqLov_move", "position": { "random": [0.4, 0.6] }, "duration": 800 },
+      { "delay": 1000 },
+      { "action": "reqLov_pump", "value": { "random": [0.1, 0.3] } },
+      { "delay": 1200 },
+      { "action": "pause", "duration": 1000 }
+    ]
+  }
+  

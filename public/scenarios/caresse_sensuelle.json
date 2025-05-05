@@ -1,0 +1,50 @@
+{
+    "loop": true,
+    "steps": [
+      { "comment": "Entrée en matière – vibration douce" },
+      { "action": "reqLov_pump", "value": 0.1 },
+      { "delay": 2000 },
+  
+      { "comment": "Mouvement lent vers l’intérieur" },
+      { "action": "reqLov_move", "position": 0.45, "duration": 1800 },
+      { "delay": 1000 },
+  
+      { "comment": "Vibration en fond" },
+      { "action": "reqLov_pump", "value": 0.17 },
+      { "delay": 1500 },
+  
+      { "comment": "Retour lent vers la base" },
+      { "action": "reqLov_move", "position": 0.1, "duration": 2200 },
+      { "delay": 1200 },
+  
+      { "comment": "Pause langoureuse" },
+      { "action": "pause", "duration": 2000 },
+  
+      { "comment": "Variation du fond – mouvement large" },
+      { "action": "reqLov_move", "position": 0.55, "duration": 2000 },
+      { "delay": 1000 },
+      { "action": "reqLov_pump", "value": 0.24 },
+      { "delay": 2000 },
+  
+      { "comment": "Retour plus marqué" },
+      { "action": "reqLov_move", "position": 0.15, "duration": 1600 },
+      { "delay": 1200 },
+  
+      { "comment": "Pause et tapotement rythmique" },
+      { "action": "pause", "duration": 1000 },
+      { "action": "reqLov_pump", "value": 0.3 },
+      { "delay": 1500 },
+      { "action": "reqLov_pump", "value": 0.17 },
+      { "delay": 1500 },
+  
+      { "comment": "Grande glissade" },
+      { "action": "reqLov_move", "position": 0.6, "duration": 2400 },
+      { "delay": 1000 },
+      { "action": "reqLov_move", "position": 0.1, "duration": 2500 },
+      { "delay": 1500 },
+  
+      { "comment": "Clôture douce – pause" },
+      { "action": "pause", "duration": 3000 }
+    ]
+  }
+  

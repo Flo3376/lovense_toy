@@ -1,0 +1,44 @@
+{
+    "loop": true,
+    "steps": [
+      { "action": "reqLov_move", "position": 0 },
+      { "delay": 500 },
+  
+      { "comment": "Phase ① : BASE ↔️"},
+      { "action": "reqLov_move", "position": { "random": [0.25, 0.45] }, "duration": 500 },
+      { "delay": 800 },
+      { "action": "reqLov_move", "position": 0, "duration": 500 },
+      { "delay": { "random": [400, 700] } },
+  
+     { "comment": "Phase ② : POINTE ↔️"},
+      { "action": "reqLov_move", "position": { "random": [0.55, 0.75] }, "duration": 400 },
+      { "delay": 800 },
+      { "action": "reqLov_move", "position": 1, "duration": 500 },
+      { "delay": 800 },
+  
+      { "comment": "Phase ③ : Pause"},
+      { "action": "pause", "duration": { "random": [2000, 3000] } },
+  
+      { "comment": "Phase ④ : Mini vibration + strokes"},
+      { "action": "reqLov_pump", "value": { "random": [0.05, 0.2] } },
+      { "delay": 1000 },
+      { "action": "reqLov_move", "position": 0, "duration": 300 },
+      { "delay": 300 },
+      { "action": "reqLov_move", "position": 0.1, "duration": 300 },
+      { "delay": 400 },
+      { "action": "stop" },
+  
+      { "comment": "Phase ⑤ : Retour base + pause"},
+      { "action": "reqLov_move", "position": 0, "duration": 500 },
+      { "delay": { "random": [1000, 2000] } },
+  
+      { "comment": "Phase ⑥ : Vibration forte"},
+      { "action": "reqLov_pump", "value": { "random": [0.45, 0.75] } },
+      { "delay": 2000 },
+      { "action": "stop" },
+  
+      { "comment": "Phase ⑦ : Pause finale"},
+      { "action": "pause", "duration": 2000 }
+    ]
+  }
+  

@@ -1,0 +1,41 @@
+{
+    "loop": true,
+    "steps": [
+      { "comment": "Vibration douce initiale" },
+      { "action": "reqLov_pump", "value": 0.1 },
+      { "delay": 1200 },
+  
+      { "comment": "Mouvement ample vers le fond" },
+      { "action": "reqLov_move", "position": 0.45, "duration": 800 },
+      { "delay": 600 },
+  
+      { "comment": "Retour vers la base" },
+      { "action": "reqLov_move", "position": 0.1, "duration": 1000 },
+      { "delay": 600 },
+  
+      { "comment": "Pause thermique" },
+      { "action": "pause", "duration": 1500 },
+  
+      { "comment": "Vibration un peu plus marquée" },
+      { "action": "reqLov_pump", "value": 0.17 },
+      { "delay": 1000 },
+  
+      { "comment": "Mouvement rapide vers le haut" },
+      { "action": "reqLov_move", "position": 0.5, "duration": 500 },
+      { "delay": 400 },
+  
+      { "comment": "Retour lent pour stabiliser" },
+      { "action": "reqLov_move", "position": 0.15, "duration": 1200 },
+      { "delay": 800 },
+  
+      { "comment": "Vibration douce répétée" },
+      { "action": "reqLov_pump", "value": 0.1 },
+      { "delay": 800 },
+      { "action": "reqLov_pump", "value": 0.17 },
+      { "delay": 800 },
+  
+      { "comment": "Pause plus longue pour respirer" },
+      { "action": "pause", "duration": 2000 }
+    ]
+  }
+  

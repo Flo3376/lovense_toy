@@ -1,0 +1,13 @@
+{
+    "loop": true,
+    "steps": [
+      { "comment": "Suspense mode ON" },
+      { "action": "reqLov_move", "position": { "random": [0.4, 0.6] }, "duration": 600 },
+      { "delay": { "random": [1500, 2500] } },
+      { "action": "reqLov_pump", "value": { "random": [0.2, 0.4] } },
+      { "delay": 1000 },
+      { "action": "pause", "duration": 2000 },
+      { "action": "reqLov_move", "position": 0, "duration": 400 }
+    ]
+  }
+  

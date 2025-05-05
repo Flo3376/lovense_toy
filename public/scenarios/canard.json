@@ -1,0 +1,34 @@
+{
+    "id": 7,
+    "name": "Vibration Canard",
+    "button": "🦆 Vibre Canard",
+    "category": "soft",
+    "loop": true,
+    "steps": [
+      { "comment": "Tapotements irréguliers comme un bec curieux" },
+      { "action": "reqLov_pump", "value": 0.1 },
+      { "delay": 800 },
+      { "action": "reqLov_pump", "value": 0.17 },
+      { "delay": 1000 },
+      { "action": "pause", "duration": 1500 },
+  
+      { "comment": "Petites glissades courtes façon palmée" },
+      { "action": "reqLov_move", "position": 0.4, "duration": 1000 },
+      { "delay": 500 },
+      { "action": "reqLov_move", "position": 0.1, "duration": 1200 },
+      { "delay": 600 },
+  
+      { "comment": "Petit moment d'agitation aquatique" },
+      { "action": "reqLov_pump", "value": 0.3 },
+      { "delay": 1200 },
+      { "action": "pause", "duration": 1000 },
+  
+      { "comment": "Va-et-vient régulier doux comme des vaguelettes" },
+      { "action": "reqLov_loop", "min": 20, "max": 50, "speed": 300 },
+      { "delay": 5000 },
+  
+      { "comment": "Repos du canard" },
+      { "action": "pause", "duration": { "random": [2000, 3000] } }
+    ]
+  }
+  

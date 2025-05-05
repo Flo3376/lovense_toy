@@ -1,0 +1,290 @@
+[
+  {
+    "time": 0,
+    "action": "reqLov_move",
+    "position": 1,
+    "duration": 50
+  },
+  {
+    "time": 1,
+    "action": "reqLov_loop",
+    "min": 66,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 14,
+    "action": "stop"
+  },
+  {
+    "time": 16,
+    "action": "reqLov_loop",
+    "min": 66,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 26,
+    "action": "stop"
+  },
+  {
+    "time": 30,
+    "action": "reqLov_loop",
+    "min": 66,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 39,
+    "action": "stop"
+  },
+  {
+    "time": 44,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 50,
+    "action": "reqLov_pump",
+    "value": 0.15
+  },
+  {
+    "time": 65,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 79,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 200
+  },
+  {
+    "time": 107,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 500
+  },
+  {
+    "time": 124,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 800
+  },
+  {
+    "time": 138,
+    "action": "reqLov_pump",
+    "value": 0.2
+  },
+  {
+    "time": 140,
+    "action": "reqLov_pump",
+    "value": 0.1
+  },
+  {
+    "time": 143,
+    "action": "stop"
+  },
+  {
+    "time": 144,
+    "action": "reqLov_pump",
+    "value": 0.1
+  },
+  {
+    "time": 145,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 750
+  },
+  {
+    "time": 155,
+    "action": "reqLov_pump",
+    "value": 0.15
+  },
+  {
+    "time": 156,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 750
+  },
+  {
+    "time": 165,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 900
+  },
+  {
+    "time": 172,
+    "action": "stop"
+  },
+  {
+    "time": 173,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 900
+  },
+  {
+    "time": 176,
+    "action": "reqLov_pump",
+    "value": 0.25
+  },
+  {
+    "time": 178,
+    "action": "reqLov_move",
+    "position": 50,
+    "duration": 50
+  },
+  {
+    "time": 179,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 500
+  },
+  {
+    "time": 199,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 350
+  },
+  {
+    "time": 218,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 600
+  },
+  {
+    "time": 232,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 450
+  },
+  {
+    "time": 246,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 255,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 33,
+    "speed": 150
+  },
+  {
+    "time": 262,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 450
+  },
+  {
+    "time": 274,
+    "action": "reqLov_pump",
+    "value": 0.25
+  },
+  {
+    "time": 276,
+    "action": "reqLov_pump",
+    "value": 0.15
+  },
+  {
+    "time": 278,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 282,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 200
+  },
+  {
+    "time": 296,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 300
+  },
+  {
+    "time": 318,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 200
+  },
+  {
+    "time": 340,
+    "action": "stop"
+  },
+  {
+    "time": 342,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 100
+  },
+  {
+    "time": 363,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 33,
+    "speed": 300
+  },
+  {
+    "time": 372,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 100
+  },
+  {
+    "time": 374,
+    "action": "reqLov_pump",
+    "value": 0.1
+  },
+  {
+    "time": 376,
+    "action": "reqLov_pump",
+    "value": 0.6
+  },
+  {
+    "time": 378,
+    "action": "reqLov_loop",
+    "min": 0,
+    "max": 100,
+    "speed": 500
+  },
+  {
+    "time": 382,
+    "action": "reqLov_pump",
+    "value": 0.1
+  },
+  {
+    "time": 396,
+    "action": "stop"
+  },
+  {
+    "time": 402.5,
+    "action": "stop"
+  }
+]
