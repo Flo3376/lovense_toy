@@ -20,10 +20,11 @@ const path = require('path');
 const http = require('http');
 const fs = require('fs');
 
-const out_port = 12346; //normalement 12345, le décallage permet d'interconnecté mon sniffer en 12345 et il appelle ici en 12346
+const config = require('./system/config');
+
 const serverStartTime = Date.now();
 let detectionAttempts = 0;
-const MAX_DETECTION_ATTEMPTS = 10;
+
 
 
 const scenarioDir = path.join(__dirname, 'public', 'scenarios');
@@ -31,7 +32,7 @@ const rythmoDir = path.join(__dirname, 'public', 'rythmo');
 if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
 
 //////////////////////////////
-const intiface = new WebSocket(`ws://localhost:${out_port}`);
+const intiface = new WebSocket(`ws://localhost:${config.ports.websocket}`);
 const { port, parser,openPort } = require('./system/serialManager');
 const { getElapsedTime, logLocalIPs, registerShutdownHandler } = require('./system/common');
 
@@ -41,16 +42,9 @@ const pendingCommands = new Map();
 
 let isCustomVibrating = false;
 let rampActive = false;
-let customMin = 0.25;
-let customMax = 0.75;
-let customSpeed = 100;
-
-//anticipateur et correcteur
-const min_cor_A = 10;
-const max_cor_A = 100;
-const min_cor_T = 2;
-const max_cor_T = 20;
-
+let customMin = config.customVibeDefaults.min;
+let customMax = config.customVibeDefaults.max;
+let customSpeed = config.customVibeDefaults.speed;
 let currentCommandId = null;
 
 
@@ -128,16 +122,17 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 app.use(express.json());
 app.use(express.static('public'));
-const PORT_WEB = 3000;
+
 
 const setupRoutes = require('./system/apiRoutes');
 setupRoutes(app, scenarioDir, rythmoDir, __dirname);
 
 // Lance le serveur HTTP
-server.listen(PORT_WEB, () => {
-  console.log(`✅ Serveur lancé sur http://localhost:${PORT_WEB}`);
+server.listen(config.ports.http, () => {
+  console.log(`✅ Serveur lancé sur http://localhost:${config.ports.http}`);
 
 });
+
 
 function handleJSONCommand(cmd) {
   if (!cmd || !cmd.type) {
@@ -274,14 +269,14 @@ function startDeviceDetectionLoop() {
 function tryDetectDevice() {
   if (solaceIndex !== null) return;
 
-  if (detectionAttempts >= MAX_DETECTION_ATTEMPTS) {
+  if (detectionAttempts >= config.detection.maxAttempts) {
     console.log("❌ Échec détection device après plusieurs tentatives.");
     console.log();
     return;
   }
 
   console.log();
-  console.log(`🔍 Tentative ${detectionAttempts + 1}/${MAX_DETECTION_ATTEMPTS} → Détection du toy...`);
+  console.log(`🔍 Tentative ${detectionAttempts + 1}/${config.detection.maxAttempts} → Détection du toy...`);
 
   intiface.send(JSON.stringify([{ StartScanning: { Id: currentId++ } }]));
   intiface.send(JSON.stringify([{ RequestDeviceList: { Id: currentId++ } }]));
@@ -341,8 +336,8 @@ function startCustomVibration() {
     const duration = customSpeed;
     const amplitude = Math.abs(customMax - customMin);
 
-    const corr_A = min_cor_A + (max_cor_A - min_cor_A) * amplitude;
-    const corr_T = min_cor_T + (max_cor_T - min_cor_T) * (duration / 2000);
+    const corr_A = config.correction.amplitude.min + (config.correction.amplitude.max - config.correction.amplitude.min) * amplitude;
+    const corr_T = config.correction.timing.min + (config.correction.timing.max - config.correction.timing.min) * (duration / 2000);
     const correction = corr_A + corr_T;
     const attente = duration + correction;
 

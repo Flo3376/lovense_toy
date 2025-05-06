@@ -149,10 +149,41 @@ function getBattery() {
   console.log("📡 Battery request sent");
 }
 
+function startDeviceDetectionLoop() {
+    detectionAttempts = 0;
+    tryDetectDevice();
+  }
+  
+  function tryDetectDevice() {
+    if (solaceIndex !== null) return;
+  
+    if (detectionAttempts >= config.detection.maxAttempts) {
+      console.log("❌ Échec détection device après plusieurs tentatives.");
+      console.log();
+      return;
+    }
+  
+    console.log();
+    console.log(`🔍 Tentative ${detectionAttempts + 1}/${config.detection.maxAttempts} → Détection du toy...`);
+  
+    intiface.send(JSON.stringify([{ StartScanning: { Id: currentId++ } }]));
+    intiface.send(JSON.stringify([{ RequestDeviceList: { Id: currentId++ } }]));
+  
+    detectionAttempts++;
+    setTimeout(() => {
+      if (solaceIndex === null) {
+        tryDetectDevice(); // relance si non trouvé
+      }
+    }, 2000);
+  }
+  
+
 module.exports = {
   setDependencies,
   pump,
   move,
   stop,
-  getBattery
+  getBattery,
+  startDeviceDetectionLoop,
+  tryDetectDevice
 };
