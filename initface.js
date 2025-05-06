@@ -1,3 +1,19 @@
+/**
+ * ========================================
+ *  Lovense Toy Interface – Main Engine
+ * ========================================
+ * 
+ *  This project was designed, organized, and developed by [Your Name],
+ *  with regular and invaluable support from Lisa (ChatGPT),
+ *  to help structure, refactor, and stabilize the whole system.
+ * 
+ *  The goal: build a solid, clean, and flexible interface
+ *  without sacrificing readability or the joy of tinkering.
+ * 
+ *  Feel free to reuse and adapt—just show a little respect
+ *  for the brain cells we burned along the way.
+ */
+
 const express = require('express');
 const WebSocket = require('ws');
 const path = require('path');
@@ -24,6 +40,7 @@ let currentId = 1;
 const pendingCommands = new Map();
 
 let isCustomVibrating = false;
+let rampActive = false;
 let customMin = 0.25;
 let customMax = 0.75;
 let customSpeed = 100;
@@ -47,7 +64,8 @@ lovense.setDependencies({
   currentIdRef: () => currentId,
   incrementId: () => currentId++,
   pendingCommands,
-  stopPulse
+  stopPulse,
+  stopRamp
 });
 //////////////////////////////
 openPort();
@@ -108,72 +126,12 @@ parser.on('data', (message) => {
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-
-
-
-
-app.get('/', (req, res) => {
-  const scenarioFiles = fs.readdirSync(scenarioDir).filter(f => f.endsWith('.json'));
-
-  const scenarioData = scenarioFiles.map(filename => {
-    try {
-      const content = fs.readFileSync(path.join(scenarioDir, filename), 'utf-8');
-      const parsed = JSON.parse(content);
-
-      // On ne garde que si les des infos sont présente
-      if (!parsed.id || !parsed.name || !parsed.button) return null;
-
-      return {
-        id: parsed.id,
-        name: parsed.name,
-        button: parsed.button,
-        category: parsed.category || 'medium',
-        file: filename
-      };
-    } catch (err) {
-      console.warn(`⚠️ Erreur parsing fichier ${filename} :`, err.message);
-      return null;
-    }
-  }).filter(x => x !== null);
-
-  // Lecture HTML et injection à la balise <scenario>
-  let html = fs.readFileSync(path.join(__dirname, 'public', 'main.html'), 'utf-8');
-  const injection = `<script>const mesScenarios = ${JSON.stringify(scenarioData)};</script>`;
-  html = html.replace('</scenario>', `${injection}\n</scenario>`);
-
-  res.send(html);
-});
-
-app.get('/player/:videoname', (req, res) => {
-  const file = req.params.videoname;
-
-  // On pourrait vérifier ici que le fichier existe dans /public/videos/
-  const allowedExt = ['.mp4', '.mkv', '.webm'];
-if (!allowedExt.some(ext => file.endsWith(ext))) {
-  return res.status(400).send('Format de fichier non valide');
-}
-
-  res.sendFile(path.join(__dirname, 'public', 'player.html'));
-});
-
-app.get('/rythmo/:nom.json', (req, res) => {
-  const filepath = path.join(rythmoDir, `${req.params.nom}.json`);
-  if (!fs.existsSync(filepath)) return res.json([]);
-  const content = fs.readFileSync(filepath, 'utf-8');
-  res.setHeader('Content-Type', 'application/json');
-  res.send(content);
-});
-
 app.use(express.json());
-app.post('/rythmo/:nom.json', (req, res) => {
-  const filepath = path.join(rythmoDir, `${req.params.nom}.json`);
-  fs.writeFileSync(filepath, JSON.stringify(req.body, null, 2));
-  res.json({ status: 'ok', saved: filepath });
-});
-
-
 app.use(express.static('public'));
 const PORT_WEB = 3000;
+
+const setupRoutes = require('./system/apiRoutes');
+setupRoutes(app, scenarioDir, rythmoDir, __dirname);
 
 // Lance le serveur HTTP
 server.listen(PORT_WEB, () => {
@@ -203,6 +161,7 @@ function handleJSONCommand(cmd) {
     case 'stop':
       console.log('🛑 Commande STOP reçue (toy)');
       stopCustomVibration();
+      stopRamp();
       break;
 
     case 'pump':
@@ -346,7 +305,17 @@ function stopPulse() {
   }
   // 🔇 Fonction bouchon : à compléter plus tard si besoin
   isCustomVibrating = false;
-  console.log('🛑 (stopPulse appelé - placeholder)');
+  console.log('🛑 (stopPulse appelé )');
+}
+
+function stopRamp() {
+  if (solaceIndex === null) {
+    console.warn("⚠️ Aucun toy connecté !");
+    return;
+  }
+  // 🔇 Fonction bouchon : à compléter plus tard si besoin
+  rampActive  = false;
+  console.log('🛑 (stopRamp appelé)');
 }
 
 function startCustomVibration() {
@@ -435,6 +404,8 @@ function req_customLoop(min, max, speed, id) {
 function lovense_rampInterpolated(start, end, duration, steps = 20) {
   if (solaceIndex === null) return;
 
+  rampActive = true;
+
   const totalStepTime = Math.floor(duration / steps);
   const delta = (end - start) / steps;
 
@@ -443,6 +414,7 @@ function lovense_rampInterpolated(start, end, duration, steps = 20) {
     const delay = totalStepTime * i;
 
     setTimeout(() => {
+      if (!rampActive) return
       const id = currentId++;
       const cmd = [{
         ScalarCmd: {

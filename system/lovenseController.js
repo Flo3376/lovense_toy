@@ -20,6 +20,7 @@ function setDependencies(opts) {
     incrementId = opts.incrementId;
     pendingCommands = opts.pendingCommands;
     stopPulse = opts.stopPulse || (() => {});
+    stopRamp=opts.stopRamp || (() => {});
   }
 
 /**
