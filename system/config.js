@@ -6,7 +6,7 @@
 module.exports = {
     // Network configuration
     ports: {
-      websocket: 12346, // Port for connecting to Intiface (default: 12345)
+      websocket: 12346, // Port for connecting to Initface (default: 12345)
       http: 3000        // Port for the web UI
     },
   

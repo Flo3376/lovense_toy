@@ -1,12 +1,23 @@
-// Internal variables set via setDependencies()
-let intiface = null;
-let pendingCommands = null;
-let stopPulse = () => {};
+const config = require('./../system/config');
 
-let getSolaceIndex = () => null;
+// Internal variables set via setDependencies()
+let initface = null;
+let pendingCommands = null;
+let stopPulse = () => { };
+
+//let getSolaceIndex = () => null;
 let getCurrentId = () => 1;
 let incrementId = () => 1;
 
+//let solaceIndex = null;
+
+let getSolaceIndex = () => null;
+let setSolaceIndexRef = (v) => {};
+
+function setSolaceIndex(index) {
+    console.log('📦 Device brut:', JSON.stringify(index, null, 2));
+    setSolaceIndexRef(index);
+}
 
 /**
  * Sets shared references from main program.
@@ -14,14 +25,15 @@ let incrementId = () => 1;
  * @param {object} opts - Shared resources and state
  */
 function setDependencies(opts) {
-    intiface = opts.intiface;
+    initface = opts.initface;
+    setSolaceIndexRef = opts.setSolaceIndex || (() => {});
     getSolaceIndex = opts.solaceIndexRef;
     getCurrentId = opts.currentIdRef;
     incrementId = opts.incrementId;
     pendingCommands = opts.pendingCommands;
-    stopPulse = opts.stopPulse || (() => {});
-    stopRamp=opts.stopRamp || (() => {});
-  }
+    stopPulse = opts.stopPulse || (() => { });
+    stopRamp = opts.stopRamp || (() => { });
+}
 
 /**
  * Sends a vibration command to the toy.
@@ -29,25 +41,25 @@ function setDependencies(opts) {
  * @param {function} callback - Optional callback on confirmation
  * @param {boolean} forceStop - Whether to stop pulse mode before sending
  */
-function pump(intensity, callback = () => {}, forceStop = false) {
-  if (getSolaceIndex === null) return console.warn("[TOY] No toy connected!");
-  if (forceStop) stopPulse();
+function pump(intensity, callback = () => { }, forceStop = false) {
+    if (getSolaceIndex() === null) return console.warn("[TOY] No toy connected!");
+    if (forceStop) stopPulse();
 
-  const id = incrementId();
-  const cmd = [{
-    ScalarCmd: {
-      Id: id,
-      DeviceIndex: getSolaceIndex(),
-      Scalars: [{ Index: 0, ActuatorType: "Oscillate", Scalar: intensity }]
-    }
-  }];
+    const id = incrementId();
+    const cmd = [{
+        ScalarCmd: {
+            Id: id,
+            DeviceIndex: getSolaceIndex(),
+            Scalars: [{ Index: 0, ActuatorType: "Oscillate", Scalar: intensity }]
+        }
+    }];
 
-  pendingCommands.set(id, () => {
-    console.log(`[TOY]✅ Vibration at ${intensity}`);
-    callback();
-  });
+    pendingCommands.set(id, () => {
+        console.log(`[TOY]✅ Vibration at ${intensity}`);
+        callback();
+    });
 
-  intiface.send(JSON.stringify(cmd));
+    initface.send(JSON.stringify(cmd));
 }
 
 /**
@@ -57,52 +69,52 @@ function pump(intensity, callback = () => {}, forceStop = false) {
  * @param {function} callback - Optional callback
  * @param {boolean} forceStop - Whether to stop pulse mode before sending
  */
-function move(position, duration, callback = () => {}, forceStop = false) {
-  if (getSolaceIndex === null) return console.warn("[TOY] No toy connected!");
-  if (forceStop) stopPulse();
+function move(position, duration, callback = () => { }, forceStop = false) {
+    if (getSolaceIndex() === null) return console.warn("[TOY] No toy connected!");
+    if (forceStop) stopPulse();
 
-  position = parseFloat(position);
-  duration = parseInt(duration);
+    position = parseFloat(position);
+    duration = parseInt(duration);
 
-  const id = incrementId();
-  const cmd = [{
-    LinearCmd: {
-      Id: id,
-      DeviceIndex: getSolaceIndex(),
-      Vectors: [{ Index: 0, Duration: duration, Position: position }]
-    }
-  }];
+    const id = incrementId();
+    const cmd = [{
+        LinearCmd: {
+            Id: id,
+            DeviceIndex: getSolaceIndex(),
+            Vectors: [{ Index: 0, Duration: duration, Position: position }]
+        }
+    }];
 
-  pendingCommands.set(id, () => {
-    console.log(`[TOY]✅ Move to ${position * 100}% for ${duration}ms`);
-    callback();
-  });
+    pendingCommands.set(id, () => {
+        console.log(`[TOY]✅ Move to ${position * 100}% for ${duration}ms`);
+        callback();
+    });
 
-  intiface.send(JSON.stringify(cmd));
+    initface.send(JSON.stringify(cmd));
 }
 
 /**
  * Sends a stop command to the toy to halt all activity.
  * @param {function} callback - Optional callback
  */
-function stop(callback = () => {}) {
-  if (getSolaceIndex === null) return console.warn("[TOY] No toy connected!");
-  stopPulse();
+function stop(callback = () => { }) {
+    if (getSolaceIndex() === null) return console.warn("[TOY] No toy connected!");
+    stopPulse();
 
-  const id = incrementId();
-  const cmd = [{
-    StopDeviceCmd: {
-      Id: id,
-      DeviceIndex: getSolaceIndex()
-    }
-  }];
+    const id = incrementId();
+    const cmd = [{
+        StopDeviceCmd: {
+            Id: id,
+            DeviceIndex: getSolaceIndex()
+        }
+    }];
 
-  pendingCommands.set(id, () => {
-    console.log(`[TOY]🛑 Stop confirmed`);
-    callback();
-  });
+    pendingCommands.set(id, () => {
+        console.log(`[TOY]🛑 Stop confirmed`);
+        callback();
+    });
 
-  intiface.send(JSON.stringify(cmd));
+    initface.send(JSON.stringify(cmd));
 }
 
 /**
@@ -110,80 +122,84 @@ function stop(callback = () => {}) {
  * Logs value to console.
  */
 function getBattery() {
-  if (!intiface || intiface.readyState !== 1) {
-    return console.warn("❌ Intiface not connected");
-  }
-
-  const requestId = incrementId();
-  const batteryRequest = {
-    SensorReadCmd: {
-      Id: requestId,
-      DeviceIndex: getSolaceIndex(),
-      SensorIndex: 0,
-      SensorType: "Battery"
+    if (!initface || initface.readyState !== 1) {
+        return console.warn("❌ initface not connected");
     }
-  };
 
-  // Temporary listener for battery response
-  const handleBatteryResponse = (msg) => {
-    try {
-      const parsed = JSON.parse(msg);
-      for (const entry of parsed) {
-        if (
-          entry.SensorReading &&
-          entry.SensorReading.Id === requestId &&
-          entry.SensorReading.SensorType === "Battery"
-        ) {
-          const level = entry.SensorReading.Data[0];
-          console.log(`🔋 Battery level: ${level}%`);
-          intiface.off("message", handleBatteryResponse); // stop listening
+    const requestId = incrementId();
+    const batteryRequest = {
+        SensorReadCmd: {
+            Id: requestId,
+            DeviceIndex: getSolaceIndex(),
+            SensorIndex: 0,
+            SensorType: "Battery"
         }
-      }
-    } catch (err) {
-      console.warn("⚠️ Error parsing battery response:", err);
-    }
-  };
+    };
 
-  intiface.on("message", handleBatteryResponse);
-  intiface.send(JSON.stringify([batteryRequest]));
-  console.log("📡 Battery request sent");
+    // Temporary listener for battery response
+    const handleBatteryResponse = (msg) => {
+        try {
+            const parsed = JSON.parse(msg);
+            for (const entry of parsed) {
+                if (
+                    entry.SensorReading &&
+                    entry.SensorReading.Id === requestId &&
+                    entry.SensorReading.SensorType === "Battery"
+                ) {
+                    const level = entry.SensorReading.Data[0];
+                    console.log(`🔋 Battery level: ${level}%`);
+                    initface.off("message", handleBatteryResponse); // stop listening
+                }
+            }
+        } catch (err) {
+            console.warn("⚠️ Error parsing battery response:", err);
+        }
+    };
+
+    initface.on("message", handleBatteryResponse);
+    initface.send(JSON.stringify([batteryRequest]));
+    console.log("📡 Battery request sent");
 }
 
 function startDeviceDetectionLoop() {
     detectionAttempts = 0;
     tryDetectDevice();
-  }
-  
-  function tryDetectDevice() {
-    if (solaceIndex !== null) return;
-  
+}
+
+function tryDetectDevice() {
+    const currentIndex = getSolaceIndex ? getSolaceIndex() : '⚠️ getSolaceIndex not defined';
+    console.log(`[DEBUG] tryDetectDevice: getSolaceIndex() = ${currentIndex}`);
+    
+    if (getSolaceIndex() !== null) return;
+
     if (detectionAttempts >= config.detection.maxAttempts) {
-      console.log("❌ Échec détection device après plusieurs tentatives.");
-      console.log();
-      return;
+        console.log("❌ Échec détection device après plusieurs tentatives.");
+        console.log();
+        return;
     }
-  
+
     console.log();
     console.log(`🔍 Tentative ${detectionAttempts + 1}/${config.detection.maxAttempts} → Détection du toy...`);
-  
-    intiface.send(JSON.stringify([{ StartScanning: { Id: currentId++ } }]));
-    intiface.send(JSON.stringify([{ RequestDeviceList: { Id: currentId++ } }]));
-  
+
+    initface.send(JSON.stringify([{ StartScanning: { Id: incrementId() } }]));
+    initface.send(JSON.stringify([{ RequestDeviceList: { Id: incrementId() } }]));
+
     detectionAttempts++;
     setTimeout(() => {
-      if (solaceIndex === null) {
-        tryDetectDevice(); // relance si non trouvé
-      }
+        if (getSolaceIndex() === null) {
+            tryDetectDevice(); // relance si non trouvé
+        }
     }, 2000);
-  }
-  
+}
+
 
 module.exports = {
-  setDependencies,
-  pump,
-  move,
-  stop,
-  getBattery,
-  startDeviceDetectionLoop,
-  tryDetectDevice
+    setDependencies,
+    pump,
+    move,
+    stop,
+    getBattery,
+    startDeviceDetectionLoop,
+    setSolaceIndex,
+    getSolaceIndex,
 };

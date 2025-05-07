@@ -33,17 +33,17 @@ function logLocalIPs() {
 
 /**
  * Registers a clean shutdown handler on SIGINT.
- * You must pass the intiface and port used by the main program.
- * @param {WebSocket} intiface - WebSocket connection to Intiface
+ * You must pass the initface and port used by the main program.
+ * @param {WebSocket} initface - WebSocket connection to initface
  * @param {SerialPort} port - SerialPort object (e.g., from serialport lib)
  */
-function registerShutdownHandler(intiface, port) {
+function registerShutdownHandler(initface, port) {
   process.on('SIGINT', () => {
     console.log('🛑 Shutdown requested (SIGINT)');
 
-    if (intiface && intiface.readyState === WebSocket.OPEN) {
-      console.log('🔌 Disconnecting from Intiface...');
-      intiface.close();
+    if (initface && initface.readyState === WebSocket.OPEN) {
+      console.log('🔌 Disconnecting from initface...');
+      initface.close();
     }
 
     if (port && port.isOpen) {

@@ -23,7 +23,6 @@ const fs = require('fs');
 const config = require('./system/config');
 
 const serverStartTime = Date.now();
-let detectionAttempts = 0;
 
 
 
@@ -32,7 +31,7 @@ const rythmoDir = path.join(__dirname, 'public', 'rythmo');
 if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
 
 //////////////////////////////
-const intiface = new WebSocket(`ws://localhost:${config.ports.websocket}`);
+const initface = new WebSocket(`ws://localhost:${config.ports.websocket}`);
 const { port, parser,openPort } = require('./system/serialManager');
 const { getElapsedTime, logLocalIPs, registerShutdownHandler } = require('./system/common');
 
@@ -49,18 +48,21 @@ let currentCommandId = null;
 
 
 logLocalIPs();
-registerShutdownHandler(intiface, port);
+registerShutdownHandler(initface, port);
 
 const lovense = require('./system/lovenseController');
 lovense.setDependencies({
-  intiface,
+  initface,
   solaceIndexRef: () => solaceIndex,
+  setSolaceIndex: (val) => solaceIndex = val, // ⬅️ AJOUTE ÇA
   currentIdRef: () => currentId,
   incrementId: () => currentId++,
   pendingCommands,
   stopPulse,
-  stopRamp
+  stopRamp,
 });
+
+
 //////////////////////////////
 openPort();
 
@@ -214,19 +216,20 @@ wss.on('connection', (ws) => {
   });
 });
 
-intiface.on('open', () => {
-  console.log('🔌 Connecté à Intiface');
+initface.on('open', () => {
+  console.log('🔌 Connecté à initface');
 
-  intiface.send(JSON.stringify([{
+  initface.send(JSON.stringify([{
     RequestServerInfo: {
       Id: currentId++,
       ClientName: "TestToyApp",
       MessageVersion: 3
     }
   }]));
+  lovense.startDeviceDetectionLoop();
 });
 
-intiface.on('message', (msg) => {
+initface.on('message', (msg) => {
   console.log(`     📨 Message reçu du client : ${msg.toString()} | ${getElapsedTime(serverStartTime)}s`);
   const parsed = JSON.parse(msg.toString());
 
@@ -241,14 +244,17 @@ intiface.on('message', (msg) => {
     }
 
     if (entry.ServerInfo) {
-      startDeviceDetectionLoop();
+      //lovense.startDeviceDetectionLoop();
     }
 
     if (entry.DeviceList) {
       entry.DeviceList.Devices.forEach(dev => {
         if (dev.DeviceName.includes("Lovense Solace Pro")) {
-          solaceIndex = dev.DeviceIndex;
-          console.log(`🎯 Device trouvé: ${dev.DeviceName} (index ${solaceIndex})`);
+          //console.log('📦 Device brut:', JSON.stringify(dev, null, 2));
+         // console.log('📦 Index brut:', JSON.stringify(dev.DeviceIndex, null, 2));
+          
+          lovense.setSolaceIndex(dev.DeviceIndex); 
+          console.log(`🎯 Device trouvé: ${dev.DeviceName} (index ${lovense.getSolaceIndex()})`);
           console.log();
           lovense.getBattery();
         }
@@ -261,33 +267,6 @@ intiface.on('message', (msg) => {
   }
 });
 
-function startDeviceDetectionLoop() {
-  detectionAttempts = 0;
-  tryDetectDevice();
-}
-
-function tryDetectDevice() {
-  if (solaceIndex !== null) return;
-
-  if (detectionAttempts >= config.detection.maxAttempts) {
-    console.log("❌ Échec détection device après plusieurs tentatives.");
-    console.log();
-    return;
-  }
-
-  console.log();
-  console.log(`🔍 Tentative ${detectionAttempts + 1}/${config.detection.maxAttempts} → Détection du toy...`);
-
-  intiface.send(JSON.stringify([{ StartScanning: { Id: currentId++ } }]));
-  intiface.send(JSON.stringify([{ RequestDeviceList: { Id: currentId++ } }]));
-
-  detectionAttempts++;
-  setTimeout(() => {
-    if (solaceIndex === null) {
-      tryDetectDevice(); // relance si non trouvé
-    }
-  }, 2000);
-}
 
 function stopCustomLoopOnly() {
   isCustomVibrating = false;
@@ -361,7 +340,7 @@ function startCustomVibration() {
       }
     });
     if (!isCustomVibrating) return;
-    intiface.send(JSON.stringify(cmd));
+    initface.send(JSON.stringify(cmd));
   }
 
   loop();
@@ -422,7 +401,7 @@ function lovense_rampInterpolated(start, end, duration, steps = 20) {
           }]
         }
       }];
-      intiface.send(JSON.stringify(cmd));
+      initface.send(JSON.stringify(cmd));
       console.log(`↗️ Step ${i}/${steps} → ${Math.round(value * 100)}%`);
     }, delay);
   }
