@@ -19,20 +19,23 @@ const WebSocket = require('ws');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
+const serverStartTime = Date.now();
+const scenarioDir = path.join(__dirname, 'public', 'scenarios');
+const rythmoDir = path.join(__dirname, 'public', 'rythmo');
+if (!fs.existsSync(scenarioDir)) fs.mkdirSync(scenarioDir);
+if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
 
 const config = require('./system/config');
 
-const serverStartTime = Date.now();
 
 
 
-const scenarioDir = path.join(__dirname, 'public', 'scenarios');
-const rythmoDir = path.join(__dirname, 'public', 'rythmo');
-if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
+
+
 
 //////////////////////////////
 const initface = new WebSocket(`ws://localhost:${config.ports.websocket}`);
-const { port, parser,openPort } = require('./system/serialManager');
+const { port, parser, openPort } = require('./system/serialManager');
 const { getElapsedTime, logLocalIPs, registerShutdownHandler } = require('./system/common');
 
 let solaceIndex = null;
@@ -94,7 +97,7 @@ setInterval(() => {
       port.write('coucou\n');
       lastCommandTime = Date.now();
     }
-  } 
+  }
 }, 1000);
 
 
@@ -124,8 +127,6 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 app.use(express.json());
 app.use(express.static('public'));
-
-
 const setupRoutes = require('./system/apiRoutes');
 setupRoutes(app, scenarioDir, rythmoDir, __dirname);
 
@@ -134,6 +135,8 @@ server.listen(config.ports.http, () => {
   console.log(`✅ Serveur lancé sur http://localhost:${config.ports.http}`);
 
 });
+
+
 
 
 function handleJSONCommand(cmd) {
@@ -230,7 +233,9 @@ initface.on('open', () => {
 });
 
 initface.on('message', (msg) => {
-  console.log(`     📨 Message reçu du client : ${msg.toString()} | ${getElapsedTime(serverStartTime)}s`);
+  if (!msg.toString().includes('"Ok"')) {
+    console.log(`     📨 Message reçu du client : ${msg.toString()} | ${getElapsedTime(serverStartTime)}s`);
+  }
   const parsed = JSON.parse(msg.toString());
 
   parsed.forEach(entry => {
@@ -250,10 +255,7 @@ initface.on('message', (msg) => {
     if (entry.DeviceList) {
       entry.DeviceList.Devices.forEach(dev => {
         if (dev.DeviceName.includes("Lovense Solace Pro")) {
-          //console.log('📦 Device brut:', JSON.stringify(dev, null, 2));
-         // console.log('📦 Index brut:', JSON.stringify(dev.DeviceIndex, null, 2));
-          
-          lovense.setSolaceIndex(dev.DeviceIndex); 
+          lovense.setSolaceIndex(dev.DeviceIndex);
           console.log(`🎯 Device trouvé: ${dev.DeviceName} (index ${lovense.getSolaceIndex()})`);
           console.log();
           lovense.getBattery();
@@ -288,7 +290,7 @@ function stopRamp() {
     return;
   }
   // 🔇 Fonction bouchon : à compléter plus tard si besoin
-  rampActive  = false;
+  rampActive = false;
   console.log('🛑 (stopRamp appelé)');
 }
 
@@ -300,6 +302,7 @@ function startCustomVibration() {
   isCustomVibrating = true;
 
   let current = customMin;
+  let toggleDirection = true;
 
   const thisCommandId = currentCommandId; // on capture l'état à l'instant T
 
@@ -329,7 +332,13 @@ function startCustomVibration() {
       }
     }];
 
-    console.log(`➡️ [${id}] Move vers ${position * 100}%, durée ${duration}ms, correction ${Math.round(correction)}ms, attente ${Math.round(attente)}ms | ${getElapsedTime(serverStartTime)}s`);
+    const arrow = toggleDirection ? '⬅️' : '➡️';
+    toggleDirection = !toggleDirection;
+
+    console.log(`${arrow} [${id}] Move vers ${position * 100}%, durée ${duration}ms, correction ${Math.round(correction)}ms, attente ${Math.round(attente)}ms | ${getElapsedTime(serverStartTime)}s`);
+
+    // Ajout d'une ligne vide toutes les 2 itérations (quand la flèche repasse à gauche)
+    if (toggleDirection) console.log();
 
     pendingCommands.set(id, () => {
       if (isCustomVibrating && thisCommandId === currentCommandId) {
@@ -347,8 +356,11 @@ function startCustomVibration() {
 }
 
 function stopCustomVibration() {
-  isCustomVibrating = false;
-  customVibeConfig = null;
+  if (isCustomVibrating) {
+    isCustomVibrating = false;
+    customVibeConfig = null;
+    console.log("🛑 Boucle custom interrompue");
+  }
   lovense.stop(); // Envoie un vrai StopDeviceCmd
 }
 
@@ -362,15 +374,11 @@ function updateCustomLoopParams(min, max, speed) {
 function req_customLoop(min, max, speed, id) {
   currentCommandId = id;
 
-  // Si déjà en cours → on met juste à jour les paramètres
   if (isCustomVibrating) {
     console.log("🔁 Mise à jour des paramètres Custom Loop");
-    updateCustomLoopParams(min, max, speed);
-    startCustomVibration();
-    //return;
+    stopCustomLoopOnly(); // <- stop flag
   }
 
-  // Sinon, on met à jour et on lance
   updateCustomLoopParams(min, max, speed);
   startCustomVibration();
 }

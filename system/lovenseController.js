@@ -4,13 +4,8 @@ const config = require('./../system/config');
 let initface = null;
 let pendingCommands = null;
 let stopPulse = () => { };
-
-//let getSolaceIndex = () => null;
 let getCurrentId = () => 1;
 let incrementId = () => 1;
-
-//let solaceIndex = null;
-
 let getSolaceIndex = () => null;
 let setSolaceIndexRef = (v) => {};
 
