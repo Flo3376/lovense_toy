@@ -6,26 +6,28 @@ let pendingCommands = null;
 let stopPulse = () => { };
 let getCurrentId = () => 1;
 let incrementId = () => 1;
-//let getSolaceIndex = () => null;
-//let setSolaceIndexRef = (v) => {};
 let solaceIndex = null;
+let sendToFrontend = () => { };
 
+/**
+ * Returns the index of the currently selected device.
+ * Used internally to identify which toy is targeted.
+ * @returns {number|null} Device index or null if none selected
+ */
 function getSolaceIndex() {
     return solaceIndex;
-  }
-
-function setSolaceIndex(index) {
-    console.log('📦 Device brut:', JSON.stringify(index, null, 2));
-    console.log('[DEBUG] Avant setSolaceIndexRef, solaceIndex =', getSolaceIndex());
-    //setSolaceIndexRef(index);
-    solaceIndex = index;
-    console.log('[DEBUG] Après setSolaceIndexRef, solaceIndex =', getSolaceIndex());
-  }/*
-function setSolaceIndex(index) {
-    console.log('📦 Device brut:', JSON.stringify(index, null, 2));
-    setSolaceIndexRef(index);
 }
-*/
+
+/**
+ * Sets the index of the connected device.
+ * Called when a device has been successfully identified.
+ * @param {number} index - The index of the detected device
+ */
+function setSolaceIndex(index) {
+    console.log('📦 Device brut:', JSON.stringify(index, null, 2));
+    solaceIndex = index;
+}
+
 /**
  * Sets shared references from main program.
  * Must be called before using any Lovense command.
@@ -33,13 +35,12 @@ function setSolaceIndex(index) {
  */
 function setDependencies(opts) {
     initface = opts.initface;
-    //setSolaceIndexRef = opts.setSolaceIndex || (() => {});
-    //getSolaceIndex = opts.solaceIndexRef;
     getCurrentId = opts.currentIdRef;
     incrementId = opts.incrementId;
     pendingCommands = opts.pendingCommands;
     stopPulse = opts.stopPulse || (() => { });
     stopRamp = opts.stopRamp || (() => { });
+    sendToFrontend = opts.sendToFrontend || (() => { });
 }
 
 /**
@@ -155,6 +156,10 @@ function getBattery() {
                 ) {
                     const level = entry.SensorReading.Data[0];
                     console.log(`🔋 Battery level: ${level}%`);
+                    sendToFrontend({
+                        type: "battery",
+                        value: level
+                    });
                     initface.off("message", handleBatteryResponse); // stop listening
                 }
             }
@@ -168,15 +173,22 @@ function getBattery() {
     console.log("📡 Battery request sent");
 }
 
+/**
+ * Starts the detection loop to search for a connected device.
+ * Will retry until success or max attempts is reached.
+ */
 function startDeviceDetectionLoop() {
     detectionAttempts = 0;
     tryDetectDevice();
 }
 
+/**
+ * Attempts to detect a device by scanning and requesting the device list.
+ * If detection fails, retries after a delay until max attempts.
+ */
 function tryDetectDevice() {
     const currentIndex = getSolaceIndex ? getSolaceIndex() : '⚠️ getSolaceIndex not defined';
-    console.log(`[DEBUG] tryDetectDevice: getSolaceIndex() = ${currentIndex}`);
-    
+
     if (getSolaceIndex() !== null) return;
 
     if (detectionAttempts >= config.detection.maxAttempts) {

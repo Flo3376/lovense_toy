@@ -287,10 +287,6 @@
 		resetId(); // ⬅️ C'est ici qu'on appelle resetId au chargement
 		ws.send(JSON.stringify({ type: "is_com9_available" }));
 
-		/*if (!com9Available) {
-			hideCom9Blocks();
-		}*/
-
 		if (ws && ws.readyState === WebSocket.OPEN) {
 			ws.send(JSON.stringify({ type: "get_battery" }));
 			console.log("📡 Demande batterie envoyée depuis frontend");
@@ -320,7 +316,7 @@
 		try {
 			const parsed = JSON.parse(data);
 
-			//console.log(parsed);
+			console.log(parsed);
 
 			if (parsed.type === 'control_lost') {
 				stopAll(); // coupe tout

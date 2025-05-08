@@ -19,7 +19,10 @@ const WebSocket = require('ws');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
+const config = require('./system/config');
+
 const serverStartTime = Date.now();
+
 const scenarioDir = path.join(__dirname, 'public', 'scenarios');
 const rythmoDir = path.join(__dirname, 'public', 'rythmo');
 if (!fs.existsSync(scenarioDir)) fs.mkdirSync(scenarioDir);
@@ -27,41 +30,36 @@ if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
 
 
 let solaceIndex = null;
+let comSerialAvailable = false;
+let lastCommandTime = Date.now(); // <- nécessaire pour le setInterval "coucou"
 
-
-
-const config = require('./system/config');
-
-
-
-
-
-
-
-//////////////////////////////
 const initface = new WebSocket(`ws://localhost:${config.ports.websocket}`);
 const { port, parser, openPort } = require('./system/serialManager');
 const { getElapsedTime, logLocalIPs, registerShutdownHandler } = require('./system/common');
 
-//let solaceIndex = null;
 let currentId = 1;
 const pendingCommands = new Map();
 let currentCommandId = null;
 
-
 logLocalIPs();
+
 registerShutdownHandler(initface, port);
 
 const lovense = require('./system/lovenseController');
 lovense.setDependencies({
   initface,
   solaceIndexRef: () => solaceIndex,
-  setSolaceIndex: (val) => solaceIndex = val, // ⬅️ AJOUTE ÇA
+  setSolaceIndex: (val) => solaceIndex = val, 
   currentIdRef: () => currentId,
   incrementId: () => currentId++,
   pendingCommands,
   stopPulse,
   stopRamp,
+  sendToFrontend: (data) => {
+    if (frontendSocket && frontendSocket.readyState === WebSocket.OPEN) {
+      frontendSocket.send(JSON.stringify(data));
+    }
+  }
 });
 
 
@@ -80,17 +78,13 @@ toyOrchestration.setDependencies({
 //////////////////////////////
 openPort();
 
-port.on('open', () => {
-  console.log('🛰️ Serial port open!');
-});
-
 parser.on('data', (line) => {
   console.log('📨 Serial response:', line.trim());
 });
 
 port.on('open', () => {
   comSerialAvailable = true;
-  console.log('🛰️ Port série ouvert !');
+  console.log('🛰️ Serial port open!');
   console.log();
 });
 
@@ -126,12 +120,6 @@ parser.on('data', (message) => {
 });
 
 
-//////////////////////////////////
-
-
-
-
-
 //serveur web pour l'interface de pilotage
 const app = express();
 const server = http.createServer(app);
@@ -147,9 +135,11 @@ server.listen(config.ports.http, () => {
 
 });
 
-
-
-
+/**
+ * Handles incoming JSON commands from the frontend WebSocket.
+ * Routes commands to appropriate Lovense or orchestration functions.
+ * @param {object} cmd - Command object with a "type" field
+ */
 function handleJSONCommand(cmd) {
   if (!cmd || !cmd.type) {
     console.log('⚠️ Commande JSON invalide reçue.');
@@ -210,6 +200,11 @@ wss.on('connection', (ws) => {
   frontendSocket = ws;
   console.log('🌐 Frontend connecté');
 
+  ws.send(JSON.stringify({
+    type: "com9_status",
+    available: comSerialAvailable
+  }));
+
   ws.on('message', (data) => {
     const message = data.toString().trim();
     console.log('👉 Reçu:', message);
@@ -259,17 +254,11 @@ initface.on('message', (msg) => {
       }
     }
 
-
-
-    if (entry.DeviceList) {
+      if (entry.DeviceList) {
       entry.DeviceList.Devices.forEach(dev => {
         if (dev.DeviceName.includes("Lovense Solace Pro")) {
           lovense.setSolaceIndex(dev.DeviceIndex);
           toyOrchestration.setSolaceIndex(dev.DeviceIndex);
-          
-          console.log('🧪 solaceIndex dans initface =', solaceIndex); //donne 🧪 solaceIndex dans initface = 1
-          console.log('🧪 getSolaceIndex() =', lovense.getSolaceIndex()); //donne 🧪 getSolaceIndex() = null
-
           console.log(`🎯 Device trouvé: ${dev.DeviceName} (index ${lovense.getSolaceIndex()})`); //on a un soucis ici 🎯 Device trouvé: Lovense Solace Pro (index null)
           console.log();
           lovense.getBattery();
@@ -279,11 +268,13 @@ initface.on('message', (msg) => {
   });
 
   if (frontendSocket && frontendSocket.readyState === WebSocket.OPEN && !msg.toString().includes('"Ok"')) {
-    frontendSocket.send(msg.toString());
+    //frontendSocket.send(msg.toString());
   }
 });
 
-
+/**
+ * Stops any ongoing pulse loop (placeholder function).
+ */
 function stopPulse() {
   if (lovense.getSolaceIndex() === null) {
     console.warn("⚠️ Aucun toy connecté !");
@@ -294,6 +285,9 @@ function stopPulse() {
   console.log('🛑 (stopPulse appelé )');
 }
 
+/**
+ * Stops ramp activity and sends a stop command to the toy.
+ */
 function stopRamp() {
   if (lovense.getSolaceIndex() === null) {
     console.warn("⚠️ Aucun toy connecté !");

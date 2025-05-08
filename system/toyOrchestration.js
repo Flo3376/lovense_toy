@@ -1,5 +1,3 @@
-// system/toyOrchestration.js
-
 let config = null;
 let initface = null;
 let pendingCommands = null;
@@ -14,6 +12,11 @@ let customMin = 0.25;
 let customMax = 0.75;
 let customSpeed = 100;
 
+/**
+ * Initializes shared dependencies for this module.
+ * Must be called before using any toy orchestration functions.
+ * @param {object} opts - Set of required references and utilities
+ */
 function setDependencies(opts) {
   config = opts.config;
   initface = opts.initface;
@@ -22,9 +25,8 @@ function setDependencies(opts) {
   getCurrentId = opts.getCurrentId;
   incrementId = opts.incrementId;
 
-  // Ajout : accès direct à solaceIndex
   solaceIndex = opts.getSolaceIndex();
-  opts.getSolaceIndex && console.log('[INIT] SolaceIndex reçu:', solaceIndex);
+  opts.getSolaceIndex;
 }
 
 function setSolaceIndex(index) {
@@ -32,6 +34,13 @@ function setSolaceIndex(index) {
   console.log(`[SET] toyOrchestration: solaceIndex = ${index}`);
 }
 
+/**
+ * Updates parameters for the custom vibration loop.
+ * Values are converted to 0–1 scale internally.
+ * @param {number} min - Minimum intensity (0–100)
+ * @param {number} max - Maximum intensity (0–100)
+ * @param {number} speed - Duration in ms for each movement
+ */
 function updateCustomLoopParams(min, max, speed) {
   customMin = min / 100;
   customMax = max / 100;
@@ -45,12 +54,24 @@ function stopCustomLoopOnly() {
   isCustomVibrating = false;
 }
 
+/**
+ * Halts the custom vibration loop without resetting command state.
+ * Useful when replacing or pausing loop logic.
+ */
 function stopCustomVibration(lovenseStop = () => {}) {
   stopCustomLoopOnly();
   currentCommandId = null;
   lovenseStop();
 }
 
+/**
+ * Initiates or updates a custom vibration loop.
+ * Interrupts previous loop if running and starts a new one.
+ * @param {number} min - Minimum intensity (0–100)
+ * @param {number} max - Maximum intensity (0–100)
+ * @param {number} speed - Time (ms) for each vibration step
+ * @param {number} id - Unique ID for this loop command
+ */
 function req_customLoop(min, max, speed, id) {
   currentCommandId = id;
 
@@ -63,6 +84,11 @@ function req_customLoop(min, max, speed, id) {
   startCustomVibration();
 }
 
+/**
+ * Starts the custom vibration loop using configured min/max/speed.
+ * Alternates between min and max positions with adjusted timing.
+ * Aborts if no device is detected or if another command interrupts.
+ */
 function startCustomVibration() {
   if (solaceIndex === null) {
     console.warn("⚠️ startCustomVibration → aucun toy détecté !");
@@ -90,7 +116,7 @@ function startCustomVibration() {
     const corr_A = config.correction.amplitude.min + (config.correction.amplitude.max - config.correction.amplitude.min) * amplitude;
     const corr_T = config.correction.timing.min + (config.correction.timing.max - config.correction.timing.min) * (duration / 2000);
     const correction = corr_A + corr_T;
-    const attente = duration + correction;
+    const waitTime = duration + correction;
 
     const id = incrementId();
     const cmd = [{
@@ -104,7 +130,7 @@ function startCustomVibration() {
     const arrow = toggleDirection ? '⬅️' : '➡️';
     toggleDirection = !toggleDirection;
 
-    console.log(`${arrow} [${id}] Move vers ${position * 100}%, durée ${duration}ms, correction ${Math.round(correction)}ms, attente ${Math.round(attente)}ms | ${getElapsedTime()}s`);
+    console.log(`${arrow} [${id}] Move vers ${position * 100}%, durée ${duration}ms, correction ${Math.round(correction)}ms, attente ${Math.round(waitTime)}ms | ${getElapsedTime()}s`);
     if (toggleDirection) console.log();
 
     pendingCommands.set(id, () => {
@@ -122,6 +148,14 @@ function startCustomVibration() {
   loop();
 }
 
+/**
+ * Gradually ramps vibration from start to end intensity.
+ * Useful for soft transitions.
+ * @param {number} start - Starting intensity (0–1)
+ * @param {number} end - Ending intensity (0–1)
+ * @param {number} duration - Total time in ms
+ * @param {number} steps - Number of interpolation steps (default: 20)
+ */
 function rampInterpolated(start, end, duration, steps = 20) {
   if (solaceIndex === null) {
     console.warn("⚠️ rampInterpolated → aucun toy détecté !");
