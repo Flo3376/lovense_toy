@@ -135,7 +135,7 @@ function startCustomVibration() {
 
     pendingCommands.set(id, () => {
       if (isCustomVibrating && thisCommandId === currentCommandId) {
-        setTimeout(loop, attente);
+        setTimeout(loop, waitTime);
       } else {
         console.log("🔁🛑 Boucle interrompue (ID changé)/terminée");
       }

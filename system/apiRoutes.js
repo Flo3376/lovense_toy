@@ -47,6 +47,20 @@ module.exports = function setupRoutes(app, scenarioDir, rythmoDir, rootDir) {
     });
 
     /**
+     * Serve the timeline page for a video.
+     * Only accepts .mp4, .mkv, or .webm extensions.
+     */
+    app.get('/timeline/:videoname', (req, res) => {
+        const file = req.params.videoname;
+        const allowedExt = ['.mp4', '.mkv', '.webm'];
+        if (!allowedExt.some(ext => file.endsWith(ext))) {
+            return res.status(400).send('Invalid video format');
+        }
+
+        res.sendFile(path.join(rootDir, 'public', 'timeline.html'));
+    });
+
+    /**
      * Serve the main page with scenario data injected into the HTML.
      * Reads all JSON files in scenarioDir and injects them into the <scenario> tag.
      */

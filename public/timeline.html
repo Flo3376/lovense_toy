@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi Timeline JSON</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #1e1e1e;
+      color: white;
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    video {
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+
+    .timeline-wrapper {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #555;
+      background: #111;
+      margin-top: 20px;
+    }
+
+    .timeline-container {
+      position: relative;
+    }
+
+    .timeline-row {
+      display: flex;
+      height: 40px;
+      border-bottom: 1px solid #333;
+    }
+
+    .step {
+      width: 40px;
+      height: 100%;
+      background: #444;
+      position: relative;
+      flex-shrink: 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stop { background: darkred; }
+    .move { background: steelblue; }
+    .loop { background: purple; }
+    .pump { background: teal; }
+
+    .step[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 4px 8px;
+      font-size: 12px;
+      white-space: pre;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .timebar {
+      display: flex;
+      height: 20px;
+      background: #000;
+      color: #ccc;
+      font-size: 10px;
+      border-top: 1px solid #333;
+    }
+
+    .timecell {
+      width: 40px;
+      text-align: left;
+      padding-left: 3px;
+      border-right: 1px solid #222;
+      flex-shrink: 0;
+    }
+
+    .cursor-line {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      background: yellow;
+      height: 100%;
+      z-index: 5;
+    }
+
+    .cursor-line.secondary {
+      background: rgba(255, 255, 0, 0.4);
+    }
+
+    .chrono-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+
+    .chrono {
+      font-size: 32px;
+      color: red;
+      font-family: monospace;
+      text-shadow: 0 0 3px black;
+    }
+
+    .legend {
+      display: flex;
+      gap: 15px;
+      font-size: 14px;
+      align-items: center;
+      color: #ccc;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .legend-box {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+    }
+
+    .legend-box.stop { background: darkred; }
+    .legend-box.move { background: steelblue; }
+    .legend-box.loop { background: purple; }
+    .legend-box.pump { background: teal; }
+    .step.vibe { background: orange; }
+    .legend-box.vibe { background: orange; }
+  </style>
+</head>
+<body>
+
+<h1>🎬 Multi Timeline depuis JSON</h1>
+
+<video id="video" controls src="/videos/demo2.mp4"></video>
+
+<div class="timeline-wrapper">
+  <div id="cursor" class="cursor-line"></div>
+  <div id="cursorNext" class="cursor-line secondary"></div>
+  <div class="timeline-container" id="timeline"></div>
+</div>
+<div class="timebar" id="timebar"></div>
+
+<div class="chrono-bar">
+  <div id="chrono" class="chrono">00:00:00:00</div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-box stop"></span> Stop</span>
+    <span class="legend-item"><span class="legend-box pump"></span> Pump</span>
+    <span class="legend-item"><span class="legend-box move"></span> Move</span>
+    <span class="legend-item"><span class="legend-box loop"></span> Loop</span>
+    <span class="legend-item"><span class="legend-box vibe"></span> Vibe</span>
+  </div>
+</div>
+
+<!-- Ajoute ceci à la fin de ton <body> -->
+  <div id="contextMenu" style="
+  display: none;
+  position: absolute;
+  z-index: 10;
+  background: #222;
+  color: white;
+  border: 1px solid #666;
+  border-radius: 4px;
+  padding: 5px;
+">
+  <button class="btn btn-sm btn-outline-light mb-1" onclick="addAction('pump')">Add Pump</button><br>
+  <button class="btn btn-sm btn-outline-light mb-1" onclick="addAction('move')">Add Move</button><br>
+  <button class="btn btn-sm btn-outline-light" onclick="addAction('stop')">Add Stop</button>
+</div>
+
+
+<!-- timeline.html AVEC ENCADREMENT EN ROSE PAR ID -->
+<!-- timeline.html AVEC GESTION INTELLIGENTE DES GROUPES -->
+<!-- timeline.html AVEC GESTION DES GROUPES + VIBE -->
+<script>
+  const timeline = document.getElementById('timeline');
+  const timebar = document.getElementById('timebar');
+  const video = document.getElementById('video');
+  const cursor = document.getElementById('cursor');
+  const cursorNext = document.getElementById('cursorNext');
+  const chrono = document.getElementById('chrono');
+
+  const stepSize = 0.5;
+  const stepWidth = 40;
+
+  const rows = ["stop", "pump", "move", "loop", "vibe"];
+  let actionsByType = { stop: [], pump: [], move: [], loop: [], vibe: [] };
+
+  function formatChrono(time) {
+    const total = Math.floor(time);
+    const frames = (time % 1) >= 0.5 ? 50 : 0;
+    const s = total % 60;
+    const m = Math.floor((total / 60)) % 60;
+    const h = Math.floor(total / 3600);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
+  }
+
+  function getVisibleStepCount() {
+    return Math.ceil(window.innerWidth / stepWidth);
+  }
+
+  function updateTimeline(currentTime) {
+    timeline.innerHTML = "";
+    timebar.innerHTML = "";
+
+    const visibleSteps = getVisibleStepCount();
+    let baseTime = currentTime - (visibleSteps / 2) * stepSize;
+    baseTime = Math.max(0, Math.floor(baseTime / stepSize) * stepSize);
+
+    const snapTime = Math.floor(currentTime / stepSize) * stepSize;
+    const offset = ((snapTime - baseTime) / stepSize) * stepWidth;
+    cursor.style.left = `${offset}px`;
+    cursorNext.style.left = `${offset + stepWidth}px`;
+
+    rows.forEach((rowType, rowIndex) => {
+      const wrapper = document.createElement('div');
+      wrapper.classList.add('timeline-row');
+      wrapper.style.position = 'relative';
+
+      const actions = actionsByType[rowType];
+
+      for (let i = 0; i < visibleSteps; i++) {
+        const t = parseFloat((baseTime + i * stepSize).toFixed(1));
+        const evt = actions.find(e => Math.abs(e.time - t) < 0.001);
+        const step = document.createElement('div');
+        step.classList.add('step');
+
+        if (evt) {
+          step.classList.add(rowType);
+          let tooltip = `Start: ${evt.time}s\nType: ${rowType}\nID: ${evt.id}`;
+          if (evt.value) tooltip += `\nIntensity: ${evt.value}`;
+          if (evt.position !== undefined) tooltip += `\nPosition: ${evt.position}`;
+          if (evt.duration) tooltip += `\nDuration: ${evt.duration}ms`;
+          if (evt.min !== undefined) tooltip += `\nMin: ${evt.min}`;
+          if (evt.max !== undefined) tooltip += `\nMax: ${evt.max}`;
+          if (evt.speed) tooltip += `\nSpeed: ${evt.speed}ms`;
+          step.title = tooltip;
+        } else {
+          step.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedTime = t;
+            selectedRow = rowType;
+            contextMenu.style.left = e.pageX + "px";
+            contextMenu.style.top = e.pageY + "px";
+            contextMenu.style.display = "block";
+          });
+        }
+
+        wrapper.appendChild(step);
+      }
+
+      if (rowType !== 'stop') {
+        const groups = [];
+        let currentGroup = [];
+        let lastTime = null;
+        let lastId = null;
+
+        const sorted = [...actions].sort((a, b) => a.time - b.time);
+        sorted.forEach(evt => {
+          if (!lastId || (Math.abs(evt.time - lastTime - stepSize) < 0.001 && evt.id === lastId)) {
+            currentGroup.push(evt);
+          } else {
+            if (currentGroup.length > 1) groups.push(currentGroup);
+            currentGroup = [evt];
+          }
+          lastTime = evt.time;
+          lastId = evt.id;
+        });
+        if (currentGroup.length > 1) groups.push(currentGroup);
+
+        groups.forEach(group => {
+          const first = group[0];
+          const last = group[group.length - 1];
+          const startOffset = ((first.time - baseTime) / stepSize) * stepWidth;
+          const groupWidth = (group.length) * stepWidth;
+
+          if (startOffset + groupWidth < 0 || startOffset > window.innerWidth) return;
+
+          const box = document.createElement('div');
+          box.style.position = 'absolute';
+          box.style.top = '0';
+          box.style.left = `${startOffset}px`;
+          box.style.width = `${groupWidth}px`;
+          box.style.height = '100%';
+          box.style.border = '2px solid deeppink';
+          box.style.borderRadius = '10px';
+          box.style.boxSizing = 'border-box';
+          box.style.pointerEvents = 'none';
+
+          if (groupWidth >= 100) {
+            const label = document.createElement('div');
+            label.innerText = `ID ${first.id}`;
+            label.style.position = 'absolute';
+            label.style.top = '2px';
+            label.style.left = '4px';
+            label.style.fontSize = '10px';
+            label.style.color = 'deeppink';
+            label.style.pointerEvents = 'none';
+            box.appendChild(label);
+          }
+
+          wrapper.appendChild(box);
+        });
+      }
+
+      timeline.appendChild(wrapper);
+    });
+
+    for (let i = 0; i < visibleSteps; i++) {
+      const time = (baseTime + i * stepSize).toFixed(1);
+      const cell = document.createElement('div');
+      cell.classList.add('timecell');
+      if (parseFloat(time) % 1 === 0) {
+        cell.innerText = `${parseInt(time)}s`;
+      }
+      timebar.appendChild(cell);
+    }
+
+    chrono.textContent = formatChrono(currentTime);
+  }
+
+  const contextMenu = document.getElementById('contextMenu');
+  let selectedTime = null;
+  let selectedRow = null;
+
+  function hideContextMenu() {
+    contextMenu.style.display = "none";
+  }
+
+  function addAction(type) {
+    alert(`TODO: Ajouter ${type} à ${selectedTime}s sur ${selectedRow}`);
+    hideContextMenu();
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!contextMenu.contains(e.target)) {
+      hideContextMenu();
+    }
+  });
+
+  fetch('./../rythmo/timeline_mock_corrected.json')
+    .then(response => response.json())
+    .then(scenarioData => {
+      actionsByType = { stop: [], pump: [], move: [], loop: [], vibe: [] };
+      Object.entries(scenarioData).forEach(([type, entries]) => {
+        Object.entries(entries).forEach(([timeStr, { action }]) => {
+          const time = parseFloat(timeStr);
+          const evt = { time, ...action };
+          actionsByType[type].push(evt);
+        });
+      });
+      video.addEventListener('timeupdate', () => updateTimeline(video.currentTime));
+      window.addEventListener('resize', () => updateTimeline(video.currentTime));
+      updateTimeline(0);
+    });
+</script>
+
+
+
+
+</body>
+</html>

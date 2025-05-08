@@ -1,0 +1,208 @@
+{
+  "pump": {
+    "0.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "0.5": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "1.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "1.5": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "2.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "2.5": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "3.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "3.5": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "4.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "4.5": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "5.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "5.5": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "6.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "6.5": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "7.0": {
+      "action": {
+        "id": 1,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "7.5": {
+      "action": {
+        "id": 100,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "8.0": {
+      "action": {
+        "id": 100,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "8.5": {
+      "action": {
+        "id": 100,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "9.0": {
+      "action": {
+        "id": 100,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "9.5": {
+      "action": {
+        "id": 100,
+        "type": "pump",
+        "value": 0.5
+      }
+    }
+  },
+  "loop": {
+    "5.0": {
+      "action": {
+        "id": 3,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    },
+    "5.5": {
+      "action": {
+        "id": 3,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    },
+    "6.0": {
+      "action": {
+        "id": 3,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    },
+    "6.5": {
+      "action": {
+        "id": 3,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    }
+  },
+  "move": {
+    "12.0": {
+      "action": {
+        "id": 2,
+        "type": "move",
+        "position": 1,
+        "duration": 1000
+      }
+    },
+    "16.0": {
+      "action": {
+        "id": 4,
+        "type": "move",
+        "position": 0,
+        "duration": 800
+      }
+    }
+  },
+  "stop": {
+    "22.0": {
+      "action": {
+        "id": 99,
+        "type": "stop"
+      }
+    }
+  }
+}

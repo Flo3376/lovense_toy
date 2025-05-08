@@ -31,11 +31,11 @@
 				</div>
 
 				<div class="move-buttons">
-					<button onclick="reqLov_move(1,sliderMoveDelayValue)">0%</button>
-					<button onclick="reqLov_move(0.75,sliderMoveDelayValue)">25%</button>
-					<button onclick="reqLov_move(0.5,sliderMoveDelayValue)">50%</button>
-					<button onclick="reqLov_move(0.25,sliderMoveDelayValue)">75%</button>
-					<button onclick="reqLov_move(0,sliderMoveDelayValue)">100%</button>
+					<button onclick="reqLov_move(1,sliderMoveSpeed)">0%</button>
+					<button onclick="reqLov_move(0.75,sliderMoveSpeed)">25%</button>
+					<button onclick="reqLov_move(0.5,sliderMoveSpeed)">50%</button>
+					<button onclick="reqLov_move(0.25,sliderMoveSpeed)">75%</button>
+					<button onclick="reqLov_move(0,sliderMoveSpeed)">100%</button>
 				</div>
 			</div>
 			<!-- Ligne de vibration com9 -->
@@ -208,9 +208,6 @@
 									Sensuelle</button>
 								<button data-scenario="prechauffage_caresse.json" onclick="loadScenario(this)">🫧
 									Préchauffage Caresse</button>
-
-
-
 							</div>
 
 							<!-- 🔥 FINISH -->
@@ -221,8 +218,6 @@
 									Final</button>
 								<button data-scenario="retrait_long.json" onclick="loadScenario(this)">🌀 Retrait
 									Long</button>
-
-
 							</div>
 						</div>
 					</div>
@@ -353,17 +348,25 @@
 	let loopMax = 25;
 	const MIN_GAP = 30; // écart minimal entre les sliders
 	const SPEED_PER_PERCENT = 10; // 10ms par % de course mini
-
+	
 	function adjustSpeedIfTooSlow() {
-		/*let course = Math.abs(loopMin - loopMax);
-		console.log("course :" +course);
-		let speedMax = course * SPEED_PER_PERCENT;
+		const course = Math.abs(loopMin - loopMax);
+		const speedMin = course * SPEED_PER_PERCENT;
+		//let speedMax = course * SPEED_PER_PERCENT;
 
-		if (loopSpeed > speedMax) {
-			loopSpeed = speedMax;
+		if (loopSpeed > speedMin) {
+			loopSpeed = speedMin;
 			document.getElementById('speed').value = loopSpeed;
 			document.getElementById('labelSpeed').innerText = `${loopSpeed}ms`;
-		}*/
+		}
+
+
+		if (loopSpeed < speedMin) {
+			loopSpeed = speedMin;
+			document.getElementById('speed').value = loopSpeed;
+			document.getElementById('labelSpeed').innerText = `${Math.round(loopSpeed)}ms`;
+			log(`⚠️ Speed raised to ${Math.round(speedMin)}ms for safe travel over ${course}%`);
+		}
 	}
 
 	document.getElementById('offsetMin ').addEventListener('input', (e) => {
