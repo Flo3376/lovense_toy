@@ -6,14 +6,26 @@ let pendingCommands = null;
 let stopPulse = () => { };
 let getCurrentId = () => 1;
 let incrementId = () => 1;
-let getSolaceIndex = () => null;
-let setSolaceIndexRef = (v) => {};
+//let getSolaceIndex = () => null;
+//let setSolaceIndexRef = (v) => {};
+let solaceIndex = null;
 
+function getSolaceIndex() {
+    return solaceIndex;
+  }
+
+function setSolaceIndex(index) {
+    console.log('📦 Device brut:', JSON.stringify(index, null, 2));
+    console.log('[DEBUG] Avant setSolaceIndexRef, solaceIndex =', getSolaceIndex());
+    //setSolaceIndexRef(index);
+    solaceIndex = index;
+    console.log('[DEBUG] Après setSolaceIndexRef, solaceIndex =', getSolaceIndex());
+  }/*
 function setSolaceIndex(index) {
     console.log('📦 Device brut:', JSON.stringify(index, null, 2));
     setSolaceIndexRef(index);
 }
-
+*/
 /**
  * Sets shared references from main program.
  * Must be called before using any Lovense command.
@@ -21,8 +33,8 @@ function setSolaceIndex(index) {
  */
 function setDependencies(opts) {
     initface = opts.initface;
-    setSolaceIndexRef = opts.setSolaceIndex || (() => {});
-    getSolaceIndex = opts.solaceIndexRef;
+    //setSolaceIndexRef = opts.setSolaceIndex || (() => {});
+    //getSolaceIndex = opts.solaceIndexRef;
     getCurrentId = opts.currentIdRef;
     incrementId = opts.incrementId;
     pendingCommands = opts.pendingCommands;

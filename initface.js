@@ -25,6 +25,11 @@ const rythmoDir = path.join(__dirname, 'public', 'rythmo');
 if (!fs.existsSync(scenarioDir)) fs.mkdirSync(scenarioDir);
 if (!fs.existsSync(rythmoDir)) fs.mkdirSync(rythmoDir);
 
+
+let solaceIndex = null;
+
+
+
 const config = require('./system/config');
 
 
@@ -38,15 +43,9 @@ const initface = new WebSocket(`ws://localhost:${config.ports.websocket}`);
 const { port, parser, openPort } = require('./system/serialManager');
 const { getElapsedTime, logLocalIPs, registerShutdownHandler } = require('./system/common');
 
-let solaceIndex = null;
+//let solaceIndex = null;
 let currentId = 1;
 const pendingCommands = new Map();
-
-let isCustomVibrating = false;
-let rampActive = false;
-let customMin = config.customVibeDefaults.min;
-let customMax = config.customVibeDefaults.max;
-let customSpeed = config.customVibeDefaults.speed;
 let currentCommandId = null;
 
 
@@ -63,6 +62,18 @@ lovense.setDependencies({
   pendingCommands,
   stopPulse,
   stopRamp,
+});
+
+
+const toyOrchestration = require('./system/toyOrchestration');
+toyOrchestration.setDependencies({
+  config,
+  initface,
+  getSolaceIndex: () => solaceIndex,
+  getElapsedTime: () => getElapsedTime(serverStartTime),
+  getCurrentId: () => currentId,
+  incrementId: () => currentId++,
+  pendingCommands
 });
 
 
@@ -160,7 +171,7 @@ function handleJSONCommand(cmd) {
       break;
     case 'stop':
       console.log('🛑 Commande STOP reçue (toy)');
-      stopCustomVibration();
+      toyOrchestration.stopCustomVibration(() => lovense.stop());
       stopRamp();
       break;
 
@@ -175,7 +186,7 @@ function handleJSONCommand(cmd) {
       break;
     case 'pumpRamp':
       console.log(`↗️ [pumpRamp] De ${cmd.start} à ${cmd.end} en ${cmd.duration}ms (ID ${cmd.id_commande})`);
-      lovense_rampInterpolated(cmd.start, cmd.end, cmd.duration);
+      toyOrchestration.rampInterpolated(cmd.start, cmd.end, cmd.duration);
       break;
     case "is_com9_available":
       frontendSocket.send(JSON.stringify({
@@ -186,7 +197,7 @@ function handleJSONCommand(cmd) {
 
     case 'customVibe':
       console.log(`🌀 Commande CustomVibe reçue: Min ${cmd.min}% / Max ${cmd.max}% à ${cmd.speed}ms (ID ${cmd.id_commande})`);
-      req_customLoop(cmd.min, cmd.max, cmd.speed, cmd.id_commande);
+      toyOrchestration.req_customLoop(cmd.min, cmd.max, cmd.speed, cmd.id_commande);
       break;
 
     default:
@@ -248,15 +259,18 @@ initface.on('message', (msg) => {
       }
     }
 
-    if (entry.ServerInfo) {
-      //lovense.startDeviceDetectionLoop();
-    }
+
 
     if (entry.DeviceList) {
       entry.DeviceList.Devices.forEach(dev => {
         if (dev.DeviceName.includes("Lovense Solace Pro")) {
           lovense.setSolaceIndex(dev.DeviceIndex);
-          console.log(`🎯 Device trouvé: ${dev.DeviceName} (index ${lovense.getSolaceIndex()})`);
+          toyOrchestration.setSolaceIndex(dev.DeviceIndex);
+          
+          console.log('🧪 solaceIndex dans initface =', solaceIndex); //donne 🧪 solaceIndex dans initface = 1
+          console.log('🧪 getSolaceIndex() =', lovense.getSolaceIndex()); //donne 🧪 getSolaceIndex() = null
+
+          console.log(`🎯 Device trouvé: ${dev.DeviceName} (index ${lovense.getSolaceIndex()})`); //on a un soucis ici 🎯 Device trouvé: Lovense Solace Pro (index null)
           console.log();
           lovense.getBattery();
         }
@@ -270,12 +284,8 @@ initface.on('message', (msg) => {
 });
 
 
-function stopCustomLoopOnly() {
-  isCustomVibrating = false;
-}
-
 function stopPulse() {
-  if (solaceIndex === null) {
+  if (lovense.getSolaceIndex() === null) {
     console.warn("⚠️ Aucun toy connecté !");
     return;
   }
@@ -285,132 +295,15 @@ function stopPulse() {
 }
 
 function stopRamp() {
-  if (solaceIndex === null) {
+  if (lovense.getSolaceIndex() === null) {
     console.warn("⚠️ Aucun toy connecté !");
     return;
   }
   // 🔇 Fonction bouchon : à compléter plus tard si besoin
   rampActive = false;
+  lovense.stop(); // ← ajout magique
   console.log('🛑 (stopRamp appelé)');
+  lovense.stop()
 }
 
-function startCustomVibration() {
-  if (solaceIndex === null) return;
 
-  stopCustomLoopOnly(); // ⬅️ juste casser la boucle précédente, PAS de stop physique !
-
-  isCustomVibrating = true;
-
-  let current = customMin;
-  let toggleDirection = true;
-
-  const thisCommandId = currentCommandId; // on capture l'état à l'instant T
-
-  function loop() {
-    // vérifie que la commande est toujours valide
-    if (!isCustomVibrating || thisCommandId !== currentCommandId) {
-      console.log("🔁❌ Boucle annulée (commande remplacée)");
-      return;
-    }
-
-    const position = current;
-    current = (current === customMin) ? customMax : customMin;
-    const duration = customSpeed;
-    const amplitude = Math.abs(customMax - customMin);
-
-    const corr_A = config.correction.amplitude.min + (config.correction.amplitude.max - config.correction.amplitude.min) * amplitude;
-    const corr_T = config.correction.timing.min + (config.correction.timing.max - config.correction.timing.min) * (duration / 2000);
-    const correction = corr_A + corr_T;
-    const attente = duration + correction;
-
-    const id = currentId++;
-    const cmd = [{
-      LinearCmd: {
-        Id: id,
-        DeviceIndex: solaceIndex,
-        Vectors: [{ Index: 0, Duration: duration, Position: position }]
-      }
-    }];
-
-    const arrow = toggleDirection ? '⬅️' : '➡️';
-    toggleDirection = !toggleDirection;
-
-    console.log(`${arrow} [${id}] Move vers ${position * 100}%, durée ${duration}ms, correction ${Math.round(correction)}ms, attente ${Math.round(attente)}ms | ${getElapsedTime(serverStartTime)}s`);
-
-    // Ajout d'une ligne vide toutes les 2 itérations (quand la flèche repasse à gauche)
-    if (toggleDirection) console.log();
-
-    pendingCommands.set(id, () => {
-      if (isCustomVibrating && thisCommandId === currentCommandId) {
-        setTimeout(loop, attente);
-      }
-      else {
-        console.log("🔁🛑 Boucle interrompue (ID changé)/terminée");
-      }
-    });
-    if (!isCustomVibrating) return;
-    initface.send(JSON.stringify(cmd));
-  }
-
-  loop();
-}
-
-function stopCustomVibration() {
-  if (isCustomVibrating) {
-    isCustomVibrating = false;
-    customVibeConfig = null;
-    console.log("🛑 Boucle custom interrompue");
-  }
-  lovense.stop(); // Envoie un vrai StopDeviceCmd
-}
-
-/*à tester*/
-function updateCustomLoopParams(min, max, speed) {
-  customMin = min / 100;
-  customMax = max / 100;
-  customSpeed = speed;
-}
-
-function req_customLoop(min, max, speed, id) {
-  currentCommandId = id;
-
-  if (isCustomVibrating) {
-    console.log("🔁 Mise à jour des paramètres Custom Loop");
-    stopCustomLoopOnly(); // <- stop flag
-  }
-
-  updateCustomLoopParams(min, max, speed);
-  startCustomVibration();
-}
-
-function lovense_rampInterpolated(start, end, duration, steps = 20) {
-  if (solaceIndex === null) return;
-
-  rampActive = true;
-
-  const totalStepTime = Math.floor(duration / steps);
-  const delta = (end - start) / steps;
-
-  for (let i = 0; i <= steps; i++) {
-    const value = start + delta * i;
-    const delay = totalStepTime * i;
-
-    setTimeout(() => {
-      if (!rampActive) return
-      const id = currentId++;
-      const cmd = [{
-        ScalarCmd: {
-          Id: id,
-          DeviceIndex: solaceIndex,
-          Scalars: [{
-            Index: 0,
-            ActuatorType: "Oscillate",
-            Scalar: Math.min(1, Math.max(0, value)) // clamp entre 0 et 1
-          }]
-        }
-      }];
-      initface.send(JSON.stringify(cmd));
-      console.log(`↗️ Step ${i}/${steps} → ${Math.round(value * 100)}%`);
-    }, delay);
-  }
-}
