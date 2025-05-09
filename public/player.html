@@ -827,12 +827,6 @@
         id_commande++;
         currentCommandId = id_commande;
 
-        //stopScenario();     // logique
-        //ctrl_hardStop();    // physique
-
-        //document.getElementById('pumpRange').value = intensity;
-        //document.getElementById('pumpValue').textContent = intensity.toFixed(2);
-
         setTimeout(() => {
             primLov_pump(intensity, currentCommandId);
         }, 150);

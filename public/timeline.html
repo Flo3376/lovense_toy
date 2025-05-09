@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <title>Multi Timeline JSON</title>
@@ -45,10 +46,21 @@
       border-right: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .stop { background: darkred; }
-    .move { background: steelblue; }
-    .loop { background: purple; }
-    .pump { background: teal; }
+    .stop {
+      background: darkred;
+    }
+
+    .move {
+      background: steelblue;
+    }
+
+    .loop {
+      background: purple;
+    }
+
+    .pump {
+      background: teal;
+    }
 
     .step[title]:hover::after {
       content: attr(title);
@@ -130,39 +142,75 @@
       margin-right: 5px;
     }
 
-    .legend-box.stop { background: darkred; }
-    .legend-box.move { background: steelblue; }
-    .legend-box.loop { background: purple; }
-    .legend-box.pump { background: teal; }
-    .step.vibe { background: orange; }
-    .legend-box.vibe { background: orange; }
+    .legend-box.stop {
+      background: darkred;
+    }
+
+    .legend-box.move {
+      background: steelblue;
+    }
+
+    .legend-box.loop {
+      background: purple;
+    }
+
+    .legend-box.pump {
+      background: teal;
+    }
+
+    .step.vibe {
+      background: orange;
+    }
+
+    .legend-box.vibe {
+      background: orange;
+    }
+
+    .cursor-line.flash {
+      animation: flashSeek 1s ease-out;
+    }
+
+    @keyframes flashSeek {
+      0% {
+        background-color: red;
+      }
+
+      50% {
+        background-color: yellow;
+      }
+
+      100% {
+        background-color: yellow;
+      }
+    }
   </style>
 </head>
+
 <body>
 
-<h1>🎬 Multi Timeline depuis JSON</h1>
+  <h1>🎬 Multi Timeline depuis JSON</h1>
 
-<video id="video" controls src="/videos/demo2.mp4"></video>
+  <video id="video" controls src="/videos/demo2.mp4"></video>
 
-<div class="timeline-wrapper">
-  <div id="cursor" class="cursor-line"></div>
-  <div id="cursorNext" class="cursor-line secondary"></div>
-  <div class="timeline-container" id="timeline"></div>
-</div>
-<div class="timebar" id="timebar"></div>
-
-<div class="chrono-bar">
-  <div id="chrono" class="chrono">00:00:00:00</div>
-  <div class="legend">
-    <span class="legend-item"><span class="legend-box stop"></span> Stop</span>
-    <span class="legend-item"><span class="legend-box pump"></span> Pump</span>
-    <span class="legend-item"><span class="legend-box move"></span> Move</span>
-    <span class="legend-item"><span class="legend-box loop"></span> Loop</span>
-    <span class="legend-item"><span class="legend-box vibe"></span> Vibe</span>
+  <div class="timeline-wrapper">
+    <div id="cursor" class="cursor-line"></div>
+    <div id="cursorNext" class="cursor-line secondary"></div>
+    <div class="timeline-container" id="timeline"></div>
   </div>
-</div>
+  <div class="timebar" id="timebar"></div>
 
-<!-- Ajoute ceci à la fin de ton <body> -->
+  <div class="chrono-bar">
+    <div id="chrono" class="chrono">00:00:00:00</div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-box stop"></span> Stop</span>
+      <span class="legend-item"><span class="legend-box pump"></span> Pump</span>
+      <span class="legend-item"><span class="legend-box move"></span> Move</span>
+      <span class="legend-item"><span class="legend-box loop"></span> Loop</span>
+      <span class="legend-item"><span class="legend-box vibe"></span> Vibe</span>
+    </div>
+  </div>
+
+  <!-- Ajoute ceci à la fin de ton <body> -->
   <div id="contextMenu" style="
   display: none;
   position: absolute;
@@ -173,200 +221,769 @@
   border-radius: 4px;
   padding: 5px;
 ">
-  <button class="btn btn-sm btn-outline-light mb-1" onclick="addAction('pump')">Add Pump</button><br>
-  <button class="btn btn-sm btn-outline-light mb-1" onclick="addAction('move')">Add Move</button><br>
-  <button class="btn btn-sm btn-outline-light" onclick="addAction('stop')">Add Stop</button>
-</div>
+    <button class="btn btn-sm btn-outline-light mb-1" onclick="addAction('pump')">Add Pump</button><br>
+    <button class="btn btn-sm btn-outline-light mb-1" onclick="addAction('move')">Add Move</button><br>
+    <button class="btn btn-sm btn-outline-light" onclick="addAction('stop')">Add Stop</button>
+  </div>
 
+  <div id="stepContextMenu" style="
+  display: none;
+  position: absolute;
+  z-index: 20;
+  background: #222;
+  color: white;
+  border: 1px solid #666;
+  border-radius: 4px;
+  padding: 5px;
+">
+    <button class="btn btn-sm btn-outline-light mb-1" onclick="editCurrentStep()">✏️ Éditer</button><br>
+    
+    <button class="btn btn-sm btn-outline-light" onclick="extendCurrentStep()">➡️ Étendre</button><hr>
+    <button class="btn btn-sm btn-outline-light mb-1" onclick="splitCurrentAction()">✂️ Couper ici</button><hr>
+    <button class="btn btn-sm btn-outline-danger mb-1" onclick="stopActionHere()">🛑 Stopper ici</button><br>
 
-<!-- timeline.html AVEC ENCADREMENT EN ROSE PAR ID -->
-<!-- timeline.html AVEC GESTION INTELLIGENTE DES GROUPES -->
-<!-- timeline.html AVEC GESTION DES GROUPES + VIBE -->
-<script>
-  const timeline = document.getElementById('timeline');
-  const timebar = document.getElementById('timebar');
-  const video = document.getElementById('video');
-  const cursor = document.getElementById('cursor');
-  const cursorNext = document.getElementById('cursorNext');
-  const chrono = document.getElementById('chrono');
+    <button class="btn btn-sm btn-outline-danger" onclick="deleteCurrentAction()">🧨 Supprimer l'action</button><br>
 
-  const stepSize = 0.5;
-  const stepWidth = 40;
+  </div>
+  </div>
 
-  const rows = ["stop", "pump", "move", "loop", "vibe"];
-  let actionsByType = { stop: [], pump: [], move: [], loop: [], vibe: [] };
+  <script>
+    const timeline = document.getElementById('timeline');
+    const timebar = document.getElementById('timebar');
+    const video = document.getElementById('video');
+    const cursor = document.getElementById('cursor');
+    const cursorNext = document.getElementById('cursorNext');
+    const chrono = document.getElementById('chrono');
+    let lastSeekTime = 0;
 
-  function formatChrono(time) {
-    const total = Math.floor(time);
-    const frames = (time % 1) >= 0.5 ? 50 : 0;
-    const s = total % 60;
-    const m = Math.floor((total / 60)) % 60;
-    const h = Math.floor(total / 3600);
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
-  }
+    const stepContextMenu = document.getElementById('stepContextMenu');
+    let selectedAction = null;
+    let selectedClickTime = null;
 
-  function getVisibleStepCount() {
-    return Math.ceil(window.innerWidth / stepWidth);
-  }
+    let isSeekingDrag = false;
+    const seekPrecisionRatio = 1.0;   // 1.0 = normal, <1 = plus sensible, >1 = plus lent
+    const seekMaxJumpSeconds = 2.0;   // max secondes par saut (utile pour glissé)
 
-  function updateTimeline(currentTime) {
-    timeline.innerHTML = "";
-    timebar.innerHTML = "";
+    timebar.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // ← important pour bloquer la sélection
+      isSeekingDrag = true;
+      seekFromEvent(e);
+    });
 
-    const visibleSteps = getVisibleStepCount();
-    let baseTime = currentTime - (visibleSteps / 2) * stepSize;
-    baseTime = Math.max(0, Math.floor(baseTime / stepSize) * stepSize);
+    document.addEventListener('mouseup', () => {
+      isSeekingDrag = false;
+    });
 
-    const snapTime = Math.floor(currentTime / stepSize) * stepSize;
-    const offset = ((snapTime - baseTime) / stepSize) * stepWidth;
-    cursor.style.left = `${offset}px`;
-    cursorNext.style.left = `${offset + stepWidth}px`;
+    document.addEventListener('mousemove', (e) => {
+      if (isSeekingDrag) {
+        e.preventDefault(); // ← important pour bloquer la sélection
+        seekFromEvent(e);
+      }
+    });
 
-    rows.forEach((rowType, rowIndex) => {
-      const wrapper = document.createElement('div');
-      wrapper.classList.add('timeline-row');
-      wrapper.style.position = 'relative';
+    document.addEventListener('contextmenu', (e) => {
+      const step = e.target.closest('.step');
+      if (!step || !step.dataset || !step.dataset.actionIndex) return;
 
-      const actions = actionsByType[rowType];
+      e.preventDefault();
 
-      for (let i = 0; i < visibleSteps; i++) {
-        const t = parseFloat((baseTime + i * stepSize).toFixed(1));
-        const evt = actions.find(e => Math.abs(e.time - t) < 0.001);
-        const step = document.createElement('div');
-        step.classList.add('step');
+      const type = step.dataset.actionType;
+      const index = parseInt(step.dataset.actionIndex);
+      selectedAction = actionsByType[type][index];
+      selectedClickTime = parseFloat(step.dataset.time);
 
-        if (evt) {
-          step.classList.add(rowType);
-          let tooltip = `Start: ${evt.time}s\nType: ${rowType}\nID: ${evt.id}`;
-          if (evt.value) tooltip += `\nIntensity: ${evt.value}`;
-          if (evt.position !== undefined) tooltip += `\nPosition: ${evt.position}`;
-          if (evt.duration) tooltip += `\nDuration: ${evt.duration}ms`;
-          if (evt.min !== undefined) tooltip += `\nMin: ${evt.min}`;
-          if (evt.max !== undefined) tooltip += `\nMax: ${evt.max}`;
-          if (evt.speed) tooltip += `\nSpeed: ${evt.speed}ms`;
-          step.title = tooltip;
-        } else {
-          step.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectedTime = t;
-            selectedRow = rowType;
-            contextMenu.style.left = e.pageX + "px";
-            contextMenu.style.top = e.pageY + "px";
-            contextMenu.style.display = "block";
+      stepContextMenu.style.left = `${e.pageX}px`;
+      stepContextMenu.style.top = `${e.pageY}px`;
+      stepContextMenu.style.display = 'block';
+    });
+
+    document.addEventListener('click', () => {
+      stepContextMenu.style.display = 'none';
+    });
+
+    function seekFromEvent(e) {
+      const rect = timebar.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = x / rect.width;
+
+      let targetTime = video.duration * percent * seekPrecisionRatio;
+      targetTime = Math.max(0, Math.min(video.duration, targetTime));
+
+      // Si on veut éviter les jumps trop violents (utile si seekPrecisionRatio > 1)
+      const currentTime = video.currentTime;
+      if (Math.abs(currentTime - targetTime) > seekMaxJumpSeconds) {
+        targetTime = currentTime + Math.sign(targetTime - currentTime) * seekMaxJumpSeconds;
+      }
+
+      video.currentTime = targetTime;
+    }
+
+    const stepSize = 0.5;
+    const stepWidth = 40;
+
+    const rows = ["stop", "pump", "move", "loop", "vibe"];
+    let actionsByType = { stop: [], pump: [], move: [], loop: [], vibe: [] };
+
+    function formatChrono(time) {
+  const total = Math.floor(time);
+  const decimal = time % 1;
+  const frames = decimal >= 0.5 ? 50 : 0; // ou même 25 si tu préfères
+  const s = total % 60;
+  const m = Math.floor((total / 60)) % 60;
+  const h = Math.floor(total / 3600);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(frames).padStart(2, '0')}  // ${Math.floor(time)}:${String(frames).padStart(2, '0')}`;
+}
+
+    let triggeredIds = new Set();
+    let activeActions = new Map(); // clé = type+id, valeur = action
+
+    function getVisibleStepCount() {
+      return Math.ceil(window.innerWidth / stepWidth);
+    }
+    function updateTimeline(currentTime) {
+      timeline.innerHTML = "";
+      timebar.innerHTML = "";
+
+      const visibleSteps = getVisibleStepCount();
+      let baseTime = currentTime - (visibleSteps / 2) * stepSize;
+      baseTime = Math.max(0, Math.floor(baseTime / stepSize) * stepSize);
+
+      const snapTime = Math.floor(currentTime / stepSize) * stepSize;
+      const offset = ((snapTime - baseTime) / stepSize) * stepWidth;
+      cursor.style.left = `${offset}px`;
+      cursorNext.style.left = `${offset + stepWidth}px`;
+
+      rows.forEach((rowType, rowIndex) => {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('timeline-row');
+        wrapper.style.position = 'relative';
+
+        const actions = actionsByType[rowType];
+
+        for (let i = 0; i < visibleSteps; i++) {
+          const t = parseFloat((baseTime + i * stepSize).toFixed(1));
+          const evt = actions.find(e => Math.abs(e.time - t) < 0.001);
+          const step = document.createElement('div');
+          step.classList.add('step');
+
+          if (evt) {
+            step.classList.add(rowType);
+            step.dataset.actionType = rowType;
+            step.dataset.actionIndex = actions.indexOf(evt);
+            step.dataset.time = t;
+
+            let tooltip = `Start: ${evt.time}s\nType: ${rowType}\nID: ${evt.id}`;
+            if (evt.value) tooltip += `\nIntensity: ${evt.value}`;
+            if (evt.position !== undefined) tooltip += `\nPosition: ${evt.position}`;
+            if (evt.duration) tooltip += `\nDuration: ${evt.duration}ms`;
+            if (evt.min !== undefined) tooltip += `\nMin: ${evt.min}`;
+            if (evt.max !== undefined) tooltip += `\nMax: ${evt.max}`;
+            if (evt.speed) tooltip += `\nSpeed: ${evt.speed}ms`;
+            step.title = tooltip;
+          } else {
+            step.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectedTime = t;
+              selectedRow = rowType;
+              contextMenu.style.left = e.pageX + "px";
+              contextMenu.style.top = e.pageY + "px";
+              contextMenu.style.display = "block";
+            });
+          }
+
+          wrapper.appendChild(step);
+        }
+
+        if (rowType !== 'stop') {
+          const groups = [];
+          let currentGroup = [];
+          let lastTime = null;
+          let lastId = null;
+
+          const sorted = [...actions].sort((a, b) => a.time - b.time);
+          sorted.forEach(evt => {
+            if (!lastId || (Math.abs(evt.time - lastTime - stepSize) < 0.001 && evt.id === lastId)) {
+              currentGroup.push(evt);
+            } else {
+              if (currentGroup.length > 1) groups.push(currentGroup);
+              currentGroup = [evt];
+            }
+            lastTime = evt.time;
+            lastId = evt.id;
+          });
+          if (currentGroup.length > 1) groups.push(currentGroup);
+
+          groups.forEach(group => {
+            const first = group[0];
+            const last = group[group.length - 1];
+            const startOffset = ((first.time - baseTime) / stepSize) * stepWidth;
+            const groupWidth = (group.length) * stepWidth;
+
+            if (startOffset + groupWidth < 0 || startOffset > window.innerWidth) return;
+
+            const box = document.createElement('div');
+            box.style.position = 'absolute';
+            box.style.top = '0';
+            box.style.left = `${startOffset}px`;
+            box.style.width = `${groupWidth}px`;
+            box.style.height = '100%';
+            box.style.border = '2px solid deeppink';
+            box.style.borderRadius = '10px';
+            box.style.boxSizing = 'border-box';
+            box.style.pointerEvents = 'none';
+
+            if (groupWidth >= 100) {
+              const label = document.createElement('div');
+              label.innerText = `ID ${first.id}`;
+              label.style.position = 'absolute';
+              label.style.top = '2px';
+              label.style.left = '4px';
+              label.style.fontSize = '10px';
+              label.style.color = 'deeppink';
+              label.style.pointerEvents = 'none';
+              box.appendChild(label);
+            }
+
+            wrapper.appendChild(box);
           });
         }
 
-        wrapper.appendChild(step);
+        timeline.appendChild(wrapper);
+      });
+
+      for (let i = 0; i < visibleSteps; i++) {
+        const time = (baseTime + i * stepSize).toFixed(1);
+        const cell = document.createElement('div');
+        cell.classList.add('timecell');
+        if (parseFloat(time) % 1 === 0) {
+          cell.innerText = `${parseInt(time)}s`;
+        }
+        timebar.appendChild(cell);
       }
 
-      if (rowType !== 'stop') {
-        const groups = [];
-        let currentGroup = [];
-        let lastTime = null;
-        let lastId = null;
-
-        const sorted = [...actions].sort((a, b) => a.time - b.time);
-        sorted.forEach(evt => {
-          if (!lastId || (Math.abs(evt.time - lastTime - stepSize) < 0.001 && evt.id === lastId)) {
-            currentGroup.push(evt);
-          } else {
-            if (currentGroup.length > 1) groups.push(currentGroup);
-            currentGroup = [evt];
-          }
-          lastTime = evt.time;
-          lastId = evt.id;
-        });
-        if (currentGroup.length > 1) groups.push(currentGroup);
-
-        groups.forEach(group => {
-          const first = group[0];
-          const last = group[group.length - 1];
-          const startOffset = ((first.time - baseTime) / stepSize) * stepWidth;
-          const groupWidth = (group.length) * stepWidth;
-
-          if (startOffset + groupWidth < 0 || startOffset > window.innerWidth) return;
-
-          const box = document.createElement('div');
-          box.style.position = 'absolute';
-          box.style.top = '0';
-          box.style.left = `${startOffset}px`;
-          box.style.width = `${groupWidth}px`;
-          box.style.height = '100%';
-          box.style.border = '2px solid deeppink';
-          box.style.borderRadius = '10px';
-          box.style.boxSizing = 'border-box';
-          box.style.pointerEvents = 'none';
-
-          if (groupWidth >= 100) {
-            const label = document.createElement('div');
-            label.innerText = `ID ${first.id}`;
-            label.style.position = 'absolute';
-            label.style.top = '2px';
-            label.style.left = '4px';
-            label.style.fontSize = '10px';
-            label.style.color = 'deeppink';
-            label.style.pointerEvents = 'none';
-            box.appendChild(label);
-          }
-
-          wrapper.appendChild(box);
-        });
-      }
-
-      timeline.appendChild(wrapper);
-    });
-
-    for (let i = 0; i < visibleSteps; i++) {
-      const time = (baseTime + i * stepSize).toFixed(1);
-      const cell = document.createElement('div');
-      cell.classList.add('timecell');
-      if (parseFloat(time) % 1 === 0) {
-        cell.innerText = `${parseInt(time)}s`;
-      }
-      timebar.appendChild(cell);
+      chrono.textContent = formatChrono(currentTime);
     }
 
-    chrono.textContent = formatChrono(currentTime);
-  }
+    /*
+        function updateTimeline(currentTime) {
+          timeline.innerHTML = "";
+          timebar.innerHTML = "";
+    
+          const visibleSteps = getVisibleStepCount();
+          let baseTime = currentTime - (visibleSteps / 2) * stepSize;
+          baseTime = Math.max(0, Math.floor(baseTime / stepSize) * stepSize);
+    
+          const snapTime = Math.floor(currentTime / stepSize) * stepSize;
+          const offset = ((snapTime - baseTime) / stepSize) * stepWidth;
+          cursor.style.left = `${offset}px`;
+          cursorNext.style.left = `${offset + stepWidth}px`;
+    
+          rows.forEach((rowType, rowIndex) => {
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('timeline-row');
+            wrapper.style.position = 'relative';
+    
+            const actions = actionsByType[rowType];
+    
+            for (let i = 0; i < visibleSteps; i++) {
+              const t = parseFloat((baseTime + i * stepSize).toFixed(1));
+              const evt = actions.find(e => Math.abs(e.time - t) < 0.001);
+              const step = document.createElement('div');
+              step.classList.add('step');
+    
+              if (evt) {
+                step.classList.add(rowType);
+                let tooltip = `Start: ${evt.time}s\nType: ${rowType}\nID: ${evt.id}`;
+                if (evt.value) tooltip += `\nIntensity: ${evt.value}`;
+                if (evt.position !== undefined) tooltip += `\nPosition: ${evt.position}`;
+                if (evt.duration) tooltip += `\nDuration: ${evt.duration}ms`;
+                if (evt.min !== undefined) tooltip += `\nMin: ${evt.min}`;
+                if (evt.max !== undefined) tooltip += `\nMax: ${evt.max}`;
+                if (evt.speed) tooltip += `\nSpeed: ${evt.speed}ms`;
+                step.title = tooltip;
+              } else {
+                step.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  selectedTime = t;
+                  selectedRow = rowType;
+                  contextMenu.style.left = e.pageX + "px";
+                  contextMenu.style.top = e.pageY + "px";
+                  contextMenu.style.display = "block";
+                });
+              }
+    
+              wrapper.appendChild(step);
+            }
+    
+            if (rowType !== 'stop') {
+              const groups = [];
+              let currentGroup = [];
+              let lastTime = null;
+              let lastId = null;
+    
+              const sorted = [...actions].sort((a, b) => a.time - b.time);
+              sorted.forEach(evt => {
+                if (!lastId || (Math.abs(evt.time - lastTime - stepSize) < 0.001 && evt.id === lastId)) {
+                  currentGroup.push(evt);
+                } else {
+                  if (currentGroup.length > 1) groups.push(currentGroup);
+                  currentGroup = [evt];
+                }
+                lastTime = evt.time;
+                lastId = evt.id;
+              });
+              if (currentGroup.length > 1) groups.push(currentGroup);
+    
+              groups.forEach(group => {
+                const first = group[0];
+                const last = group[group.length - 1];
+                const startOffset = ((first.time - baseTime) / stepSize) * stepWidth;
+                const groupWidth = (group.length) * stepWidth;
+    
+                if (startOffset + groupWidth < 0 || startOffset > window.innerWidth) return;
+    
+                const box = document.createElement('div');
+                box.style.position = 'absolute';
+                box.style.top = '0';
+                box.style.left = `${startOffset}px`;
+                box.style.width = `${groupWidth}px`;
+                box.style.height = '100%';
+                box.style.border = '2px solid deeppink';
+                box.style.borderRadius = '10px';
+                box.style.boxSizing = 'border-box';
+                box.style.pointerEvents = 'none';
+    
+                if (groupWidth >= 100) {
+                  const label = document.createElement('div');
+                  label.innerText = `ID ${first.id}`;
+                  label.style.position = 'absolute';
+                  label.style.top = '2px';
+                  label.style.left = '4px';
+                  label.style.fontSize = '10px';
+                  label.style.color = 'deeppink';
+                  label.style.pointerEvents = 'none';
+                  box.appendChild(label);
+                }
+    
+                wrapper.appendChild(box);
+              });
+            }
+    
+            timeline.appendChild(wrapper);
+          });
+    
+          for (let i = 0; i < visibleSteps; i++) {
+            const time = (baseTime + i * stepSize).toFixed(1);
+            const cell = document.createElement('div');
+            cell.classList.add('timecell');
+            if (parseFloat(time) % 1 === 0) {
+              cell.innerText = `${parseInt(time)}s`;
+            }
+            timebar.appendChild(cell);
+          }
+    
+          chrono.textContent = formatChrono(currentTime);
+        }
+    */
+    const contextMenu = document.getElementById('contextMenu');
+    let selectedTime = null;
+    let selectedRow = null;
 
-  const contextMenu = document.getElementById('contextMenu');
-  let selectedTime = null;
-  let selectedRow = null;
+    function hideContextMenu() {
+      contextMenu.style.display = "none";
+    }
 
-  function hideContextMenu() {
-    contextMenu.style.display = "none";
-  }
-
-  function addAction(type) {
-    alert(`TODO: Ajouter ${type} à ${selectedTime}s sur ${selectedRow}`);
-    hideContextMenu();
-  }
-
-  document.addEventListener('click', (e) => {
-    if (!contextMenu.contains(e.target)) {
+    function addAction(type) {
+      alert(`TODO: Ajouter ${type} à ${selectedTime}s sur ${selectedRow}`);
       hideContextMenu();
     }
-  });
 
-  fetch('./../rythmo/timeline_mock_corrected.json')
-    .then(response => response.json())
-    .then(scenarioData => {
-      actionsByType = { stop: [], pump: [], move: [], loop: [], vibe: [] };
-      Object.entries(scenarioData).forEach(([type, entries]) => {
-        Object.entries(entries).forEach(([timeStr, { action }]) => {
-          const time = parseFloat(timeStr);
-          const evt = { time, ...action };
-          actionsByType[type].push(evt);
+    document.addEventListener('click', (e) => {
+      if (!contextMenu.contains(e.target)) {
+        hideContextMenu();
+      }
+    });
+
+    fetch('./../rythmo/timeline_mock_corrected.json')
+      .then(response => response.json())
+      .then(scenarioData => {
+        actionsByType = { stop: [], pump: [], move: [], loop: [], vibe: [] };
+        Object.entries(scenarioData).forEach(([type, entries]) => {
+          Object.entries(entries).forEach(([timeStr, { action }]) => {
+            const time = parseFloat(timeStr);
+            const evt = { time, ...action };
+            actionsByType[type].push(evt);
+          });
+        });
+        video.addEventListener('timeupdate', () => {
+          const currentTime = video.currentTime;
+
+
+          const currentKeys = new Set();
+
+          rows.forEach(type => {
+            actionsByType[type].forEach(evt => {
+              if (Math.abs(evt.time - currentTime) < stepSize / 2) {
+                const key = `${type}_${evt.id}`;
+                currentKeys.add(key);
+                if (!activeActions.has(key)) {
+                  activeActions.set(key, evt);
+                  triggerAction(evt); // start
+                }
+              }
+            });
+          });
+
+
+          video.addEventListener('seeking', () => {
+            const now = Date.now();
+            if (now - lastSeekTime < 500) return; // ignore si trop rapproché
+            lastSeekTime = now;
+
+            console.log('⏩ Seeking détecté : reset en cours');
+
+            for (let [key, action] of activeActions.entries()) {
+              if (!['move', 'stop'].includes(action.type)) {
+                stopAction(action);
+              }
+            }
+
+            activeActions.clear();
+            triggeredIds.clear();
+
+            cursor.classList.add('flash');
+            setTimeout(() => cursor.classList.remove('flash'), 1000);
+          });
+
+          // Stop celles qui ne sont plus actives
+          for (let key of activeActions.keys()) {
+            const [type, id] = key.split('_');
+            if (!currentKeys.has(key)) {
+              // Est-ce qu’une autre action du même TYPE est encore active ?
+              const stillActive = [...currentKeys].some(k => k.startsWith(`${type}_`));
+              if (!stillActive) {
+                const action = activeActions.get(key);
+
+                // Ne pas stopper certains types
+                if (['move', 'stop'].includes(action.type)) {
+                  activeActions.delete(key); // On le retire juste
+                } else {
+                  stopAction(action);
+                  activeActions.delete(key);
+                }
+              }
+            }
+          }
+
+          updateTimeline(currentTime);
+
+        });
+        window.addEventListener('resize', () => updateTimeline(video.currentTime));
+        updateTimeline(0);
+      });
+
+    function triggerAction(action) {
+      console.log("⏱️ Action déclenchée :", action);
+
+      switch (action.type) {
+        case "pump":
+          console.log(`🚿 PUMP → Intensité: ${action.value}`);
+          break;
+
+        case "move":
+          console.log(`🚀 MOVE → Position: ${action.position}, Durée: ${action.duration}ms`);
+          break;
+
+        case "loop":
+          console.log(`🔁 LOOP → Min: ${action.min}, Max: ${action.max}, Vitesse: ${action.speed}ms`);
+          break;
+
+        case "vibe":
+          console.log(`🎵 VIBE → ID: ${action.id}, Intensité: ${action.value}`);
+          break;
+
+        case "stop":
+          console.log(`⛔ STOP → Arrêt demandé`);
+          break;
+
+        default:
+          console.warn(`⚠️ Type d'action inconnu:`, action);
+          break;
+      }
+    }
+
+    /*partie de controle d'un des toys*/
+
+    function stopAction(action) {
+      console.log(`🛑 STOP action → Type: ${action.type}, ID: ${action.id}`);
+      // ici tu peux envoyer un signal de fin à ton moteur
+    }
+
+    function isActionTypeContinuing(type, currentTime) {
+      const nextTime = parseFloat((currentTime + stepSize).toFixed(1));
+      return actionsByType[type].some(e => Math.abs(e.time - nextTime) < 0.001);
+    }
+
+    function stopAll() {
+      req_stopAll();
+    }
+
+    function req_stopAll() {
+      id_commande++;
+      currentCommandId = id_commande;
+
+      ctrl_hardStop(); // Pour l’ensemble Lovense + COM9
+    }
+
+    function ctrl_hardStop() {
+      isLoopActive = false;
+      ws.send(JSON.stringify({ type: 'stop' }));
+      console.log('🛑 [ctrl_hardStop] Stop envoyé');
+      log('🛑 [ctrl_hardStop] Stop envoyé');
+    }
+
+    function reqLov_pump(intensity) {
+      id_commande++;
+      currentCommandId = id_commande;
+
+      setTimeout(() => {
+        primLov_pump(intensity, currentCommandId);
+      }, 150);
+    }
+
+    function reqLov_loop(min, max, speed) {
+      id_commande++;
+      currentCommandId = id_commande;
+
+
+      ctrl_loopLov(min, max, speed, currentCommandId);
+    }
+
+    function ctrl_loopLov(min, max, speed, id) {
+      isLoopActive = true;
+
+      ws.send(JSON.stringify({
+        type: 'customVibe',
+        min: min,
+        max: max,
+        speed: speed,
+        id_commande: id
+      }));
+      console.log(`🌀 [customLoop] min: ${min}%, max: ${max}%, duration: ${speed}ms (ID ${id})`);
+      log(`🌀 [customLoop] min: ${min}%, max: ${max}%, duration: ${speed}ms (ID ${id})`);
+    }
+
+    function primLov_pump(intensity, id) {
+      ws.send(JSON.stringify({
+        type: 'pump',
+        intensity,
+        id_commande: id
+      }));
+      console.log(`📡 [primLov_pump] Intensité ${Math.round(intensity * 100)}% (ID ${id})`);
+      log(`📡 [primLov_pump] Intensité ${Math.round(intensity * 100)}% (ID ${id})`);
+    }
+
+    function reqLov_move(position, duration) {
+      id_commande++; // Nouvelle commande = nouveau token
+      //ctrl_hardStop(); // Coupe toute action précédente
+
+      setTimeout(() => {
+        primLov_move(position, duration, id_commande);
+      }, 100); // ou 200ms si nécessaire
+    }
+
+    function primLov_move(position, duration, id) {
+      ws.send(JSON.stringify({
+        type: 'move',
+        position: position,   // entre 0.0 et 1.0
+        duration: duration,   // en ms
+        id_commande: id
+      }));
+      console.log(`➡️ [prim_move] Vers ${position * 100}% en ${duration}ms (ID ${id})`);
+      log(`➡️ [prim_move] Vers ${position * 100}% en ${duration}ms (ID ${id})`);
+    }
+
+    function deleteCurrentStep() {
+      if (!selectedAction || !selectedAction.type) return;
+
+      const type = selectedAction.type;
+      const id = selectedAction.id;
+      const time = selectedClickTime;
+
+      const confirmCut = confirm(`Couper ici (ID ${id}) à ${time}s ?`);
+      if (!confirmCut) {
+        stepContextMenu.style.display = 'none';
+        return;
+      }
+
+      const actions = actionsByType[type];
+
+      // Supprime juste la case à l'instant cliqué
+      const indexToRemove = actions.findIndex(a => a.id === id && Math.abs(a.time - time) < 0.001);
+      if (indexToRemove !== -1) {
+        actions.splice(indexToRemove, 1);
+      }
+
+      // Change l'ID de toutes celles après ce temps
+      const newId = id + 1000;
+      actions.forEach(a => {
+        if (a.id === id && a.time > time) {
+          console.log(`✂️ ID ${a.id} → ${newId} à ${a.time}s`);
+          a.id = newId;
+        }
+      });
+
+      //updateTimeline(video.currentTime);
+      reindexActionIDs();
+      stepContextMenu.style.display = 'none';
+    }
+
+    function deleteCurrentAction() {
+      if (!selectedAction || selectedAction.id === undefined) return;
+
+      const idToDelete = selectedAction.id;
+      const confirmDelete = confirm(`Supprimer toutes les actions avec l'ID ${idToDelete} ?`);
+
+      if (!confirmDelete) {
+        console.log('❌ Suppression annulée');
+        stepContextMenu.style.display = 'none';
+        return;
+      }
+
+      let totalRemoved = 0;
+
+      rows.forEach(type => {
+        const before = actionsByType[type].length;
+        actionsByType[type] = actionsByType[type].filter(action => action.id !== idToDelete);
+        totalRemoved += before - actionsByType[type].length;
+      });
+
+      console.log(`🧹 ${totalRemoved} actions supprimées pour l'ID ${idToDelete}`);
+      // updateTimeline(video.currentTime);
+      reindexActionIDs();
+      stepContextMenu.style.display = 'none';
+    }
+
+    function splitCurrentAction() {
+      if (!selectedAction || !selectedAction.type) return;
+
+      const type = selectedAction.type;
+      const id = selectedAction.id;
+      const time = selectedClickTime;
+
+      const confirmSplit = confirm(`Scinder l'action ID ${id} à partir de ${time}s ?`);
+      if (!confirmSplit) {
+        stepContextMenu.style.display = 'none';
+        return;
+      }
+
+      const newId = id + 1000;
+      const actions = actionsByType[type];
+
+      actions.forEach(a => {
+        if (a.id === id && a.time >= time) {
+          console.log(`🔪 Scindé : ${a.time}s → ID ${newId}`);
+          a.id = newId;
+        }
+      });
+
+      //updateTimeline(video.currentTime);
+      reindexActionIDs();
+      stepContextMenu.style.display = 'none';
+    }
+
+    function stopActionHere() {
+      if (!selectedAction || !selectedAction.type) return;
+
+      const type = selectedAction.type;
+      const id = selectedAction.id;
+      const time = selectedClickTime;
+
+      const confirmStop = confirm(`Stopper l'action ID ${id} à partir de ${time}s ?`);
+      if (!confirmStop) {
+        stepContextMenu.style.display = 'none';
+        return;
+      }
+
+      const actions = actionsByType[type];
+
+      // Supprimer toutes les actions de ce groupe avec un time >= cliqué
+      const before = actions.length;
+      actionsByType[type] = actions.filter(a => !(a.id === id && a.time >= time));
+      const removed = before - actionsByType[type].length;
+
+      console.log(`🛑 Action ID ${id} stoppée à ${time}s (${removed} step(s) supprimé(s))`);
+      //updateTimeline(video.currentTime);
+      stepContextMenu.style.display = 'none';
+      reindexActionIDs();
+    }
+
+    function extendCurrentStep() {
+  if (!selectedAction || !selectedAction.type) return;
+
+  const type = selectedAction.type;
+  const id = selectedAction.id;
+  const time = selectedClickTime;
+
+  if (type === "move" || type === "stop") {
+    alert("Impossible d'étendre une action de type 'move' ou 'stop'.");
+    stepContextMenu.style.display = 'none';
+    return;
+  }
+
+  const actions = actionsByType[type];
+  const times = actions.map(a => a.time).sort((a, b) => a - b);
+
+  const nextObstacle = times.find(t => t > time && actions.find(a => a.time === t && a.id !== id));
+  const lastTime = nextObstacle !== undefined ? nextObstacle : Math.floor(video.duration / stepSize) * stepSize;
+
+  const newSteps = [];
+  for (let t = time + stepSize; t <= lastTime; t += stepSize) {
+    const alreadyExists = actions.some(a => Math.abs(a.time - t) < 0.001);
+    if (!alreadyExists) {
+      newSteps.push({ ...selectedAction, time: t });
+    } else {
+      break;
+    }
+  }
+
+  actions.push(...newSteps);
+  actionsByType[type] = actions.sort((a, b) => a.time - b.time);
+
+  console.log(`📏 Étendu ID ${id} jusqu'à ${lastTime}s (${newSteps.length} steps ajoutés)`);
+  updateTimeline(video.currentTime);
+  stepContextMenu.style.display = 'none';
+}
+
+    function reindexActionIDs() {
+      let currentId = 1;
+      const idMap = new Map();
+
+      rows.forEach(type => {
+        const actions = actionsByType[type];
+
+        actions.sort((a, b) => a.time - b.time); // tri temporel si besoin
+
+        actions.forEach(action => {
+          const originalId = action.id;
+          if (!idMap.has(originalId)) {
+            idMap.set(originalId, currentId++);
+          }
+          action.id = idMap.get(originalId);
         });
       });
-      video.addEventListener('timeupdate', () => updateTimeline(video.currentTime));
-      window.addEventListener('resize', () => updateTimeline(video.currentTime));
-      updateTimeline(0);
-    });
-</script>
+
+      console.log("🔄 Réindexation terminée.");
+      updateTimeline(video.currentTime);
+    }
+
+
+
+  </script>
 
 
 
 
 </body>
+
 </html>
