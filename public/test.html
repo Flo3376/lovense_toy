@@ -1,0 +1,226 @@
+<html>
+
+<head>
+    <style>
+        *,
+        *:before,
+        *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: -ms-grid;
+            display: grid;
+            background-color: #3264fe;
+            place-items: center;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 80%;
+            background-color: #ffffff;
+            padding: 50px 40px 20px 40px;
+            border-radius: 10px;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            margin-top: 30px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 100%;
+            outline: none;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            bottom: 0;
+            background-color: transparent;
+            pointer-events: none;
+        }
+
+        .slider-track {
+            width: 100%;
+            height: 5px;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            bottom: 0;
+            border-radius: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            -webkit-appearance: none;
+            height: 5px;
+        }
+
+        input[type="range"]::-moz-range-track {
+            -moz-appearance: none;
+            height: 5px;
+        }
+
+        input[type="range"]::-ms-track {
+            appearance: none;
+            height: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 1.7em;
+            width: 1.7em;
+            background-color: #3264fe;
+            cursor: pointer;
+            margin-top: -9px;
+            pointer-events: auto;
+            border-radius: 50%;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            -webkit-appearance: none;
+            height: 1.7em;
+            width: 1.7em;
+            cursor: pointer;
+            border-radius: 50%;
+            background-color: #3264fe;
+            pointer-events: auto;
+            border: none;
+        }
+
+        input[type="range"]::-ms-thumb {
+            appearance: none;
+            height: 1.7em;
+            width: 1.7em;
+            cursor: pointer;
+            border-radius: 50%;
+            background-color: #3264fe;
+            pointer-events: auto;
+        }
+
+        input[type="range"]:active::-webkit-slider-thumb {
+            background-color: #ffffff;
+            border: 1px solid #3264fe;
+        }
+
+        .values {
+            background-color: #3264fe;
+            width: 32%;
+            position: relative;
+            margin: auto;
+            padding: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 25px;
+            color: #ffffff;
+        }
+
+        .values:before {
+            content: "";
+            position: absolute;
+            height: 0;
+            width: 0;
+            border-top: 15px solid #3264fe;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            margin: auto;
+            bottom: -14px;
+            left: 0;
+            right: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="values">
+            <span id="range1">
+                0
+            </span>
+            <span> &dash; </span>
+            <span id="range2">
+                100
+            </span>
+        </div>
+        <div class="container">
+            <div class="slider-track"></div>
+            <input type="range" min="0" max="100" value="30" id="slider-1" oninput="slideOne()">
+            <input type="range" min="0" max="100" value="70" id="slider-2" oninput="slideTwo()">
+        </div>
+    </div>
+</body>
+<script>
+    window.onload = function () {
+        slideOne();
+        slideTwo();
+    };
+
+    let sliderOne = document.getElementById("slider-1");
+    let sliderTwo = document.getElementById("slider-2");
+    let displayValOne = document.getElementById("range1");
+    let displayValTwo = document.getElementById("range2");
+    let minGap = 30;
+    let sliderTrack = document.querySelector(".slider-track");
+    let sliderMaxValue = document.getElementById("slider-1").max;
+
+
+
+    function slideOne() {
+  let val1 = parseInt(sliderOne.value);
+  let val2 = parseInt(sliderTwo.value);
+
+  // Applique une butée à droite
+  if (val1 + minGap > 100) {
+    val1 = 100 - minGap;
+    sliderOne.value = val1;
+  }
+
+  // Pousse le slider 2 si collision
+  if (val1 + minGap > val2) {
+    val2 = val1 + minGap;
+    if (val2 > 100) val2 = 100;
+    sliderTwo.value = val2;
+    displayValTwo.textContent = val2;
+  }
+
+  displayValOne.textContent = val1;
+  fillColor();
+}
+
+function slideTwo() {
+  let val1 = parseInt(sliderOne.value);
+  let val2 = parseInt(sliderTwo.value);
+
+  // Applique une butée à gauche
+  if (val2 - minGap < 0) {
+    val2 = minGap;
+    sliderTwo.value = val2;
+  }
+
+  // Pousse le slider 1 si collision
+  if (val2 - minGap < val1) {
+    val1 = val2 - minGap;
+    if (val1 < 0) val1 = 0;
+    sliderOne.value = val1;
+    displayValOne.textContent = val1;
+  }
+
+  displayValTwo.textContent = val2;
+  fillColor();
+}
+    function fillColor() {
+        percent1 = (sliderOne.value / sliderMaxValue) * 100;
+        percent2 = (sliderTwo.value / sliderMaxValue) * 100;
+        sliderTrack.style.background = `linear-gradient(to right, #dadae5 ${percent1}% , #3264fe ${percent1}% , #3264fe ${percent2}%, #dadae5 ${percent2}%)`;
+    }
+</script>
+
+</html>

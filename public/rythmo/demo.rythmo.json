@@ -1,0 +1,460 @@
+{
+  "stop": {
+    "5": {
+      "action": {
+        "time": 5,
+        "id": 1,
+        "type": "stop"
+      }
+    },
+    "22": {
+      "action": {
+        "time": 22,
+        "id": 2,
+        "type": "stop"
+      }
+    }
+  },
+  "pump": {
+    "0": {
+      "action": {
+        "time": 0,
+        "id": 3,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "1": {
+      "action": {
+        "time": 1,
+        "id": 3,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "2": {
+      "action": {
+        "time": 2,
+        "id": 3,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "3": {
+      "action": {
+        "time": 3,
+        "id": 3,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "8": {
+      "action": {
+        "time": 8,
+        "id": 4,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "9": {
+      "action": {
+        "time": 9,
+        "id": 4,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "11": {
+      "action": {
+        "time": 11,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "12": {
+      "action": {
+        "time": 12,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "13": {
+      "action": {
+        "time": 13,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "14": {
+      "action": {
+        "time": 14,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "15": {
+      "action": {
+        "time": 15,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "16": {
+      "action": {
+        "time": 16,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "17": {
+      "action": {
+        "time": 17,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "19": {
+      "action": {
+        "time": 19,
+        "type": "pump",
+        "id": 6,
+        "value": 0.25
+      }
+    },
+    "20": {
+      "action": {
+        "time": 20,
+        "type": "pump",
+        "id": 6,
+        "value": 0.25
+      }
+    },
+    "21": {
+      "action": {
+        "time": 21,
+        "type": "pump",
+        "id": 6,
+        "value": 0.25
+      }
+    },
+    "0.5": {
+      "action": {
+        "time": 0.5,
+        "id": 3,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "1.5": {
+      "action": {
+        "time": 1.5,
+        "id": 3,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "2.5": {
+      "action": {
+        "time": 2.5,
+        "id": 3,
+        "type": "pump",
+        "value": 0.2
+      }
+    },
+    "7.5": {
+      "action": {
+        "time": 7.5,
+        "id": 4,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "8.5": {
+      "action": {
+        "time": 8.5,
+        "id": 4,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "9.5": {
+      "action": {
+        "time": 9.5,
+        "id": 4,
+        "type": "pump",
+        "value": 0.5
+      }
+    },
+    "11.5": {
+      "action": {
+        "time": 11.5,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "12.5": {
+      "action": {
+        "time": 12.5,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "13.5": {
+      "action": {
+        "time": 13.5,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "14.5": {
+      "action": {
+        "time": 14.5,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "15.5": {
+      "action": {
+        "time": 15.5,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "16.5": {
+      "action": {
+        "time": 16.5,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "17.5": {
+      "action": {
+        "time": 17.5,
+        "type": "pump",
+        "id": 5,
+        "value": 0.15
+      }
+    },
+    "18.5": {
+      "action": {
+        "time": 18.5,
+        "type": "pump",
+        "id": 6,
+        "value": 0.25
+      }
+    },
+    "19.5": {
+      "action": {
+        "time": 19.5,
+        "type": "pump",
+        "id": 6,
+        "value": 0.25
+      }
+    },
+    "20.5": {
+      "action": {
+        "time": 20.5,
+        "type": "pump",
+        "id": 6,
+        "value": 0.25
+      }
+    }
+  },
+  "move": {
+    "12": {
+      "action": {
+        "time": 12,
+        "id": 7,
+        "type": "move",
+        "position": 1,
+        "duration": 1000
+      }
+    },
+    "16": {
+      "action": {
+        "time": 16,
+        "id": 8,
+        "type": "move",
+        "position": 0,
+        "duration": 800
+      }
+    }
+  },
+  "loop": {
+    "24": {
+      "action": {
+        "time": 24,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "25": {
+      "action": {
+        "time": 25,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "26": {
+      "action": {
+        "time": 26,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "27": {
+      "action": {
+        "time": 27,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "28": {
+      "action": {
+        "time": 28,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "29": {
+      "action": {
+        "time": 29,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "55": {
+      "action": {
+        "time": 55,
+        "id": 10,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    },
+    "56": {
+      "action": {
+        "time": 56,
+        "id": 10,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    },
+    "24.5": {
+      "action": {
+        "time": 24.5,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "25.5": {
+      "action": {
+        "time": 25.5,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "26.5": {
+      "action": {
+        "time": 26.5,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "27.5": {
+      "action": {
+        "time": 27.5,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "28.5": {
+      "action": {
+        "time": 28.5,
+        "type": "loop",
+        "id": 9,
+        "start": 25,
+        "end": 75,
+        "duration": 5500,
+        "allerRetour": true
+      }
+    },
+    "55.5": {
+      "action": {
+        "time": 55.5,
+        "id": 10,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    },
+    "56.5": {
+      "action": {
+        "time": 56.5,
+        "id": 10,
+        "type": "loop",
+        "min": 10,
+        "max": 80,
+        "speed": 300
+      }
+    }
+  },
+  "vibe": {}
+}

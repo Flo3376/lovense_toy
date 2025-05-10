@@ -29,12 +29,14 @@ body {
     left: 0;
     right: 0;
     z-index: 1000;
-    background-color: #121212; /* pour qu’il masque pas à moitié le scroll */
+    background-color: #121212;
+    /* pour qu’il masque pas à moitié le scroll */
 }
 
 .mount_table {
     position: absolute;
-    top: 100px; /* ou hauteur réelle de #interface-wrap */
+    top: 100px;
+    /* ou hauteur réelle de #interface-wrap */
     left: 0;
     right: 0;
     bottom: 0;
@@ -135,7 +137,8 @@ button {
     background-color: #222;
     color: white;
     overflow-y: auto;
-    display: block; /* ou toggle si besoin */
+    display: block;
+    /* ou toggle si besoin */
     padding: 5px 10px;
 }
 
@@ -252,6 +255,8 @@ button {
 .save-btn:hover {
     background-color: hotpink;
 }
+
+/*
 button {
     margin: 10px;
     padding: 6px 12px;
@@ -261,8 +266,339 @@ button {
     background-color: #333;
     color: white;
     cursor: pointer;
+  }*/
+
+button:hover {
+    background-color: #555;
+}
+
+body {
+    background: #1e1e1e;
+    color: white;
+    font-family: Arial;
+    padding: 20px;
+}
+
+.timeline-wrapper {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #555;
+    background: #111;
+    margin-top: 20px;
+}
+
+.timeline-container {
+    position: relative;
+}
+
+.timeline-row {
+    display: flex;
+    height: 40px;
+    border-bottom: 1px solid #333;
+}
+
+.step {
+    width: 40px;
+    height: 100%;
+    background: #444;
+    position: relative;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stop {
+    background: darkred;
+}
+
+.move {
+    background: steelblue;
+}
+
+.loop {
+    background: purple;
+}
+
+.pump {
+    background: teal;
+}
+
+.step[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: pre;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.timebar {
+    display: flex;
+    height: 20px;
+    background: #000;
+    color: #ccc;
+    font-size: 10px;
+    border-top: 1px solid #333;
+}
+
+.timecell {
+    width: 40px;
+    text-align: left;
+    padding-left: 3px;
+    border-right: 1px solid #222;
+    flex-shrink: 0;
+}
+
+.cursor-line {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    background: yellow;
+    height: 100%;
+    z-index: 5;
+}
+
+.cursor-line.secondary {
+    background: rgba(255, 255, 0, 0.4);
+}
+
+.chrono-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.chrono {
+    font-size: 32px;
+    color: red;
+    font-family: monospace;
+    text-shadow: 0 0 3px black;
+}
+
+.legend {
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+    align-items: center;
+    color: #ccc;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+}
+
+.legend-box {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+}
+
+.legend-box.stop {
+    background: darkred;
+}
+
+.legend-box.move {
+    background: steelblue;
+}
+
+.legend-box.loop {
+    background: purple;
+}
+
+.legend-box.pump {
+    background: teal;
+}
+
+.step.vibe {
+    background: orange;
+}
+
+.legend-box.vibe {
+    background: orange;
+}
+
+.cursor-line.flash {
+    animation: flashSeek 1s ease-out;
+}
+
+.nav_bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: #111;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    z-index: 100;
+    font-family: sans-serif;
+}
+
+@keyframes flashSeek {
+    0% {
+        background-color: red;
+    }
+
+    50% {
+        background-color: yellow;
+    }
+
+    100% {
+        background-color: yellow;
+    }
+}
+
+#contextMenu {
+    display: none;
+    position: absolute;
+    z-index: 10;
+    background: #222;
+    color: white;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+#stepContextMenu {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    background: #222;
+    color: white;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+#pumpModal {
+    display: none;
+    position: fixed;
+    z-index: 50;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #222;
+    color: white;
+    padding: 20px;
+    border: 2px solid deeppink;
+    border-radius: 10px;
+    box-shadow: 0 0 10px deeppink;
+    text-align: center;
+    width: 680px;
+}
+
+#loopModal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #222;
+    color: white;
+    padding: 20px;
+    border: 2px solid deeppink;
+    border-radius: 10px;
+    box-shadow: 0 0 10px deeppink;
+    width: 600px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-left: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider-round {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: 0.3s;
+}
+
+.slider-round:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.switch input:checked+.slider-round {
+    background-color: deeppink;
+}
+
+.switch input:checked+.slider-round:before {
+    transform: translateX(26px);
+}
+
+.selected-intensity {
+    outline: 3px solid yellow;
+    box-shadow: 0 0 10px yellow;
+}
+
+#loopModal input[type=range]:not(.loop-slider) {
+    appearance: revert-layer;
+    -webkit-appearance: none;
+    background: #666;
+    height: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+/*
+
+.range_container {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    margin: 100px auto;
   }
   
-  button:hover {
-    background-color: #555;
+  .sliders_control {
+    position: relative;
+    min-height: 50px;
   }
+  
+  .form_control {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    font-size: 24px;
+    color: #635a5a;
+  }
+  
+  
+  #fromSlider {
+    height: 0;
+    z-index: 1;
+  }*/

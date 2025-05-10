@@ -1,0 +1,134 @@
+{
+  "stop": {
+    "0": {
+      "action": {
+        "time": 0,
+        "id": 1,
+        "type": "stop"
+      }
+    },
+    "9.5": {
+      "action": {
+        "time": 9.5,
+        "id": 2,
+        "type": "stop"
+      }
+    }
+  },
+  "pump": {
+    "6": {
+      "action": {
+        "time": 6,
+        "type": "pump",
+        "id": 3,
+        "value": 0.35
+      }
+    },
+    "7": {
+      "action": {
+        "time": 7,
+        "type": "pump",
+        "id": 3,
+        "value": 0.35
+      }
+    },
+    "8": {
+      "action": {
+        "time": 8,
+        "type": "pump",
+        "id": 3,
+        "value": 0.35
+      }
+    },
+    "9": {
+      "action": {
+        "time": 9,
+        "type": "pump",
+        "id": 3,
+        "value": 0.35
+      }
+    },
+    "6.5": {
+      "action": {
+        "time": 6.5,
+        "type": "pump",
+        "id": 3,
+        "value": 0.35
+      }
+    },
+    "7.5": {
+      "action": {
+        "time": 7.5,
+        "type": "pump",
+        "id": 3,
+        "value": 0.35
+      }
+    },
+    "8.5": {
+      "action": {
+        "time": 8.5,
+        "type": "pump",
+        "id": 3,
+        "value": 0.35
+      }
+    }
+  },
+  "move": {
+    "2": {
+      "action": {
+        "time": 2,
+        "id": 5,
+        "type": "move",
+        "position": 0,
+        "duration": 1000
+      }
+    },
+    "19": {
+      "action": {
+        "time": 19,
+        "id": 7,
+        "type": "move",
+        "position": 1,
+        "duration": 250
+      }
+    },
+    "22": {
+      "action": {
+        "time": 22,
+        "id": 8,
+        "type": "move",
+        "position": 0,
+        "duration": 250
+      }
+    },
+    "26": {
+      "action": {
+        "time": 26,
+        "id": 9,
+        "type": "move",
+        "position": 1,
+        "duration": 250
+      }
+    },
+    "0.5": {
+      "action": {
+        "time": 0.5,
+        "id": 4,
+        "type": "move",
+        "position": 1,
+        "duration": 1000
+      }
+    },
+    "3.5": {
+      "action": {
+        "time": 3.5,
+        "id": 6,
+        "type": "move",
+        "position": 0,
+        "duration": 1000
+      }
+    }
+  },
+  "loop": {},
+  "vibe": {}
+}
