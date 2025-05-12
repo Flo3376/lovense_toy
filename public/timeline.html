@@ -254,37 +254,37 @@
           } else {
             step.addEventListener('click', (e) => {
               e.stopPropagation();
-  video.currentTime = t;
-             /*contextMenu.style.display = 'none';
-              stepContextMenu.style.display = 'none';
+              video.currentTime = t;
+              /*contextMenu.style.display = 'none';
+               stepContextMenu.style.display = 'none';
+               e.stopPropagation();
+               selectedTime = t;
+               selectedRow = rowType;
+               const menuHeight = contextMenu.offsetHeight || 150;
+               const x = e.pageX;
+               const y = e.pageY;
+ 
+               contextMenu.style.left = `${x}px`;
+               contextMenu.style.top = `${y - menuHeight}px`;
+               contextMenu.style.display = "block";*/
+            });
+            step.addEventListener('dblclick', (e) => {
               e.stopPropagation();
+
               selectedTime = t;
               selectedRow = rowType;
+
               const menuHeight = contextMenu.offsetHeight || 150;
               const x = e.pageX;
               const y = e.pageY;
 
+              // Ferme l'autre menu au cas où
+              stepContextMenu.style.display = 'none';
+
               contextMenu.style.left = `${x}px`;
               contextMenu.style.top = `${y - menuHeight}px`;
-              contextMenu.style.display = "block";*/
+              contextMenu.style.display = "block";
             });
-            step.addEventListener('dblclick', (e) => {
-  e.stopPropagation();
-
-  selectedTime = t;
-  selectedRow = rowType;
-
-  const menuHeight = contextMenu.offsetHeight || 150;
-  const x = e.pageX;
-  const y = e.pageY;
-
-  // Ferme l'autre menu au cas où
-  stepContextMenu.style.display = 'none';
-
-  contextMenu.style.left = `${x}px`;
-  contextMenu.style.top = `${y - menuHeight}px`;
-  contextMenu.style.display = "block";
-});
           }
 
           wrapper.appendChild(step);

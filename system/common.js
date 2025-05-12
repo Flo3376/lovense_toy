@@ -59,9 +59,13 @@ function registerShutdownHandler(initface, port) {
     }
   });
 }
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 module.exports = {
   getElapsedTime,
   logLocalIPs,
-  registerShutdownHandler
+  registerShutdownHandler,delay
 };
